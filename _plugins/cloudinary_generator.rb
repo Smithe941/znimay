@@ -18,6 +18,7 @@ module Jekyll
       cloud_name = ENV['CLOUDINARY_CLOUD_NAME'] || site.config.dig('cloudinary', 'cloud_name')
       api_key = ENV['CLOUDINARY_API_KEY'] || site.config.dig('cloudinary', 'api_key')
       api_secret = ENV['CLOUDINARY_API_SECRET'] || site.config.dig('cloudinary', 'api_secret')
+      base_folder = ENV['CLOUDINARY_BASE_FOLDER'] || site.config.dig('cloudinary', 'base_folder') || 'holy_father_port'
       
       return if cloud_name.nil? || cloud_name.empty? || api_key.nil? || api_secret.nil?
       
@@ -28,11 +29,11 @@ module Jekyll
         api_secret: api_secret
       )
       
-      Jekyll.logger.info "Cloudinary:", "Fetching media from Cloudinary..."
+      Jekyll.logger.info "Cloudinary:", "Fetching media from Cloudinary (base folder: #{base_folder})..."
       
       begin
         # Fetch resources from collections
-        media_data = fetch_cloudinary_media_from_collections(cloud_name)
+        media_data = fetch_cloudinary_media_from_collections(cloud_name, base_folder)
         
         # Generate _data/media.yml content
         media_yml = generate_media_yml(media_data)
@@ -56,21 +57,30 @@ module Jekyll
 
     private
 
-    def fetch_cloudinary_media_from_collections(cloud_name)
+    def fetch_cloudinary_media_from_collections(cloud_name, base_folder)
       media_data = {
         'hero' => nil,
         'main' => [],
         'galleries' => {}
       }
       
-      all_resources = fetch_all_resources
+      # Only consider resources that live inside the configured base folder.
+      # This excludes Cloudinary sample assets (no asset_folder) and any other
+      # portfolios stored in the same Cloudinary account.
+      all_resources = scope_to_base_folder(fetch_all_resources, base_folder)
+      Jekyll.logger.info "Cloudinary:", "Resources within '#{base_folder}': #{all_resources.length}"
       
-      # Fetch hero
+      hero_folder = "#{base_folder}/main/hero"
+      main_folder = "#{base_folder}/main"
+      galleries_prefix = "#{base_folder}/galleries/"
+      
+      # Fetch hero (strictly from <base>/main/hero or <base>/hero)
       Jekyll.logger.info "Cloudinary:", "Fetching hero..."
       begin
-        hero_resources = filter_resources(all_resources, asset_folder: ['holy_father_port/main/hero', 'hero', 'holy_father_port/hero'])
-        hero_resources.concat(list_resources("holy_father_port/main/hero")['resources'] || [])
-        hero_resources.uniq! { |r| r['public_id'] }
+        hero_resources = all_resources.select do |r|
+          af = r['asset_folder'].to_s
+          af == hero_folder || af == "#{base_folder}/hero"
+        end
         
         if hero_resources.any?
           hero = hero_resources.first
@@ -81,16 +91,10 @@ module Jekyll
         Jekyll.logger.warn "Cloudinary:", "Error fetching hero: #{e.message}"
       end
       
-      # Fetch main collection
+      # Fetch main collection (strictly from <base>/main, excluding the hero subfolder)
       Jekyll.logger.info "Cloudinary:", "Fetching main collection..."
       begin
-        main_by_collection = filter_resources(all_resources, asset_folder: ['holy_father_port/main', 'main'], exclude: ['hero', 'galleries', 'sample'])
-        main_by_public_id = filter_resources(all_resources, public_id_contains: 'main', exclude: ['hero', 'galleries', 'sample'], require_empty_asset_folder: true)
-        main_by_folder = (list_resources("holy_father_port/main")['resources'] || []).reject { |r| r['public_id'].include?('/hero/') || r['public_id'].include?('sample') }
-        
-        main_resources = (main_by_collection + main_by_public_id + main_by_folder).uniq { |r| r['public_id'] }
-        # Additional filter to exclude samples
-        main_resources.reject! { |r| r['public_id'].downcase.include?('sample') || r['public_id'].downcase.include?('cld-sample') }
+        main_resources = all_resources.select { |r| r['asset_folder'].to_s == main_folder }
         
         Jekyll.logger.info "Cloudinary:", "Total unique main resources: #{main_resources.length}"
         
@@ -101,13 +105,12 @@ module Jekyll
         Jekyll.logger.warn "Cloudinary:", "Error fetching main collection: #{e.message}"
       end
       
-      # Fetch galleries
+      # Fetch galleries (strictly from <base>/galleries/...)
       Jekyll.logger.info "Cloudinary:", "Fetching galleries..."
       begin
-        galleries_by_asset_folder = filter_resources(all_resources, asset_folder_contains: 'galleries/')
-        galleries_by_public_id = filter_resources(all_resources, public_id_contains: 'galleries/')
-        
-        all_galleries_resources = (galleries_by_asset_folder + galleries_by_public_id).uniq { |r| r['public_id'] }
+        all_galleries_resources = all_resources.select do |r|
+          r['asset_folder'].to_s.include?(galleries_prefix)
+        end
         Jekyll.logger.info "Cloudinary:", "Total unique galleries resources: #{all_galleries_resources.length}"
       
         if all_galleries_resources.any?
@@ -164,6 +167,15 @@ module Jekyll
       images = Cloudinary::Api.resources(type: 'upload', max_results: 500, resource_type: 'image')
       videos = Cloudinary::Api.resources(type: 'upload', max_results: 500, resource_type: 'video')
       (images['resources'] || []) + (videos['resources'] || [])
+    end
+
+    # Keep only assets whose asset_folder is the base folder or nested inside it.
+    # Cloudinary sample assets have an empty asset_folder and are dropped here.
+    def scope_to_base_folder(resources, base_folder)
+      resources.select do |resource|
+        af = resource['asset_folder'].to_s
+        af == base_folder || af.start_with?("#{base_folder}/")
+      end
     end
 
     def filter_resources(resources, asset_folder: nil, asset_folder_contains: nil, public_id_contains: nil, exclude: [], require_empty_asset_folder: false)
