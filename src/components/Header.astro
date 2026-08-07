@@ -1,0 +1,256 @@
+---
+import { t } from '../i18n/ui';
+import { homePath, teamMemberPath } from '../lib/paths';
+import { team } from '../data/team';
+import BrandLogo from './BrandLogo.astro';
+import I18nText from './I18nText.astro';
+
+interface Props {
+  /** When true, nav logo stays hidden until hero brand scrolls out of view */
+  swapLogoAfterHero?: boolean;
+}
+
+const { swapLogoAfterHero = false } = Astro.props;
+const uk = t('uk');
+const en = t('en');
+---
+
+<header
+  class="fixed inset-x-0 top-0 z-50 bg-ink/95 text-surface backdrop-blur-md supports-[backdrop-filter]:bg-ink/85"
+  data-swap-logo={swapLogoAfterHero ? 'true' : 'false'}
+>
+  <div
+    class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 md:px-8 md:py-3.5"
+  >
+    <a
+      id="nav-brand"
+      href={homePath()}
+      class:list={[
+        'relative z-50 block min-w-0 cursor-pointer transition-[opacity,transform] duration-300 ease-out hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70',
+        swapLogoAfterHero
+          ? 'pointer-events-none -translate-y-1 opacity-0'
+          : 'opacity-100',
+      ]}
+      aria-label={uk.hero.brand}
+      aria-hidden={swapLogoAfterHero ? 'true' : undefined}
+      tabindex={swapLogoAfterHero ? -1 : undefined}
+    >
+      <BrandLogo lang="uk" size="nav" variant="bare" />
+    </a>
+
+    <nav class="hidden items-center gap-8 text-sm tracking-wide text-blush-soft/90 md:flex" aria-label="Primary">
+      <a class="cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink" href={`${homePath()}#team`}>
+        <I18nText uk={uk.nav.team} en={en.nav.team} />
+      </a>
+      <a class="cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink" href={`${homePath()}#studio`}>
+        <I18nText uk={uk.nav.studio} en={en.nav.studio} />
+      </a>
+      <a class="cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink" href={`${homePath()}#pricing`}>
+        <I18nText uk={uk.nav.pricing} en={en.nav.pricing} />
+      </a>
+      <a class="cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink" href={`${homePath()}#contact`}>
+        <I18nText uk={uk.nav.contact} en={en.nav.contact} />
+      </a>
+    </nav>
+
+    <div class="relative z-50 flex items-center gap-1 sm:gap-2">
+      <button
+        type="button"
+        id="lang-switch"
+        class="cursor-pointer px-3 py-2 text-xs tracking-[0.18em] text-blush-soft transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:text-blush md:text-sm"
+        aria-label={uk.lang.switchTo}
+      >
+        <span class="i18n-uk">{uk.lang.en}</span>
+        <span class="i18n-en">{en.lang.uk}</span>
+      </button>
+
+      <button
+        type="button"
+        id="nav-toggle"
+        class="flex h-11 w-11 cursor-pointer items-center justify-center text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink md:hidden"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        aria-label={uk.nav.home}
+        data-label-open-uk={uk.lang.switchTo === 'Мова' ? 'Меню' : 'Menu'}
+        data-label-open-en="Menu"
+        data-label-close-uk="Закрити"
+        data-label-close-en="Close"
+      >
+        <span class="sr-only" data-nav-label>Меню</span>
+        <span class="flex w-5 flex-col gap-1.5" aria-hidden="true">
+          <span class="nav-line block h-px w-full bg-current transition duration-300" data-line="1"></span>
+          <span class="nav-line block h-px w-full bg-current transition duration-300" data-line="2"></span>
+        </span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div
+  id="mobile-nav"
+  class="fixed inset-0 z-40 hidden bg-ink md:hidden"
+  hidden
+  role="dialog"
+  aria-modal="true"
+  aria-label="Menu"
+>
+  <div
+    class="flex h-full flex-col justify-between px-6 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[calc(4.5rem+env(safe-area-inset-top))]"
+  >
+    <nav class="flex flex-col gap-1" aria-label="Mobile">
+      <a
+        class="cursor-pointer border-b border-blush/15 py-5 font-display text-4xl text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70"
+        href={`${homePath()}#team`}
+        data-nav-link
+      >
+        <I18nText uk={uk.nav.team} en={en.nav.team} />
+      </a>
+      <a
+        class="cursor-pointer border-b border-blush/15 py-5 font-display text-4xl text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70"
+        href={`${homePath()}#studio`}
+        data-nav-link
+      >
+        <I18nText uk={uk.nav.studio} en={en.nav.studio} />
+      </a>
+      <a
+        class="cursor-pointer border-b border-blush/15 py-5 font-display text-4xl text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70"
+        href={`${homePath()}#pricing`}
+        data-nav-link
+      >
+        <I18nText uk={uk.nav.pricing} en={en.nav.pricing} />
+      </a>
+      <a
+        class="cursor-pointer border-b border-blush/15 py-5 font-display text-4xl text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70"
+        href={`${homePath()}#contact`}
+        data-nav-link
+      >
+        <I18nText uk={uk.nav.contact} en={en.nav.contact} />
+      </a>
+
+      <p class="mt-10 text-xs tracking-[0.2em] uppercase text-blush-soft/50">
+        <I18nText uk={uk.nav.team} en={en.nav.team} />
+      </p>
+      <div class="mt-3 flex flex-col">
+        {
+          team.map((member) => (
+            <a
+              class="cursor-pointer py-3 text-xl text-blush-soft transition hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:text-blush"
+              href={teamMemberPath(member.slug)}
+              data-nav-link
+            >
+              <I18nText uk={member.name.uk} en={member.name.en} />
+            </a>
+          ))
+        }
+      </div>
+    </nav>
+
+    <a
+      class="cursor-pointer text-sm tracking-wide text-blush-soft/70 transition hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+      href="https://www.instagram.com/znimay_phstudio/"
+      target="_blank"
+      rel="noreferrer"
+    >
+      @znimay_phstudio
+    </a>
+  </div>
+</div>
+
+<script>
+  import { persistLang } from '../lib/lang-preference';
+  import { isLang } from '../i18n/config';
+
+  const switchBtn = document.getElementById('lang-switch');
+  switchBtn?.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-lang');
+    const next = current === 'en' ? 'uk' : 'en';
+    if (!isLang(next)) return;
+    persistLang(next);
+    document.documentElement.lang = next;
+    document.documentElement.setAttribute('data-lang', next);
+    const titleEl = document.querySelector('title');
+    if (titleEl) {
+      const key = next === 'en' ? 'data-title-en' : 'data-title-uk';
+      const value = titleEl.getAttribute(key);
+      if (value) document.title = value;
+    }
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) {
+      const key = next === 'en' ? 'data-desc-en' : 'data-desc-uk';
+      const value = meta.getAttribute(key);
+      if (value) meta.setAttribute('content', value);
+    }
+    window.dispatchEvent(new CustomEvent('znimay:lang', { detail: { lang: next } }));
+  });
+
+  const toggle = document.getElementById('nav-toggle');
+  const panel = document.getElementById('mobile-nav');
+  const label = toggle?.querySelector('[data-nav-label]');
+  const line1 = toggle?.querySelector('[data-line="1"]') as HTMLElement | null;
+  const line2 = toggle?.querySelector('[data-line="2"]') as HTMLElement | null;
+
+  function menuLabels() {
+    const lang = document.documentElement.getAttribute('data-lang') === 'en' ? 'en' : 'uk';
+    return {
+      open: toggle?.getAttribute(`data-label-open-${lang}`) || 'Menu',
+      close: toggle?.getAttribute(`data-label-close-${lang}`) || 'Close',
+    };
+  }
+
+  function setOpen(open: boolean) {
+    if (!toggle || !panel) return;
+    const { open: openLabel, close: closeLabel } = menuLabels();
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? closeLabel : openLabel);
+    if (label) label.textContent = open ? closeLabel : openLabel;
+    panel.hidden = !open;
+    panel.classList.toggle('hidden', !open);
+    document.body.classList.toggle('nav-open', open);
+    if (line1 && line2) {
+      line1.style.transform = open ? 'translateY(3.5px) rotate(45deg)' : '';
+      line2.style.transform = open ? 'translateY(-3.5px) rotate(-45deg)' : '';
+    }
+  }
+
+  toggle?.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    setOpen(open);
+  });
+
+  panel?.querySelectorAll('[data-nav-link]').forEach((item) => {
+    item.addEventListener('click', () => setOpen(false));
+  });
+
+  const header = document.querySelector('header[data-swap-logo]');
+  const navBrand = document.getElementById('nav-brand');
+  const heroBrand = document.getElementById('hero-brand');
+
+  if (header?.getAttribute('data-swap-logo') === 'true' && navBrand && heroBrand) {
+    const setNavLogoVisible = (visible: boolean) => {
+      navBrand.classList.toggle('opacity-0', !visible);
+      navBrand.classList.toggle('-translate-y-1', !visible);
+      navBrand.classList.toggle('pointer-events-none', !visible);
+      navBrand.classList.toggle('opacity-100', visible);
+      navBrand.classList.toggle('translate-y-0', visible);
+      navBrand.setAttribute('aria-hidden', visible ? 'false' : 'true');
+      if (visible) {
+        navBrand.removeAttribute('tabindex');
+      } else {
+        navBrand.setAttribute('tabindex', '-1');
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setNavLogoVisible(!entry.isIntersecting);
+      },
+      {
+        root: null,
+        threshold: 0,
+        rootMargin: '-64px 0px 0px 0px',
+      },
+    );
+
+    observer.observe(heroBrand);
+  }
+</script>

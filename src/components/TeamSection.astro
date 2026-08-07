@@ -1,0 +1,81 @@
+---
+import { t } from '../i18n/ui';
+import { team, teamMonogram } from '../data/team';
+import { teamMemberPath } from '../lib/paths';
+import { fetchTeamHero, imageUrl } from '../lib/cloudinary';
+import TeamPortrait from './TeamPortrait.astro';
+import I18nText from './I18nText.astro';
+
+const uk = t('uk');
+const en = t('en');
+
+const cards = await Promise.all(
+  team.map(async (member) => {
+    const hero = await fetchTeamHero(member.folder);
+    return {
+      member,
+      coverUrl: hero ? imageUrl(hero.publicId, 'card') : null,
+      coverAlt: hero?.alt ?? member.name.uk,
+      monogram: teamMonogram(member.name.uk),
+    };
+  }),
+);
+---
+
+<section
+  id="team"
+  class="snap-section flex min-h-[100svh] min-h-[100dvh] flex-col px-4 pt-[max(3.5rem,calc(env(safe-area-inset-top)+2.75rem))] pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-14 sm:pb-10 md:mx-auto md:min-h-0 md:max-w-6xl md:px-8 md:py-16"
+>
+  <div class="reveal mb-4 max-w-xl shrink-0 sm:mb-6 md:mb-10">
+    <h2 class="font-display text-[1.85rem] leading-none sm:text-4xl md:text-5xl">
+      <I18nText uk={uk.team.title} en={en.team.title} />
+    </h2>
+    <p class="mt-1.5 text-[0.85rem] leading-snug text-muted sm:mt-3 sm:text-[0.95rem] sm:leading-relaxed md:mt-4 md:text-base">
+      <I18nText uk={uk.team.subtitle} en={en.team.subtitle} />
+    </p>
+  </div>
+
+  <div class="flex min-h-0 flex-1 flex-col justify-center gap-2 sm:gap-2.5 md:grid md:flex-none md:grid-cols-3 md:justify-start md:gap-8">
+    {
+      cards.map(({ member, coverUrl, coverAlt, monogram }, index) => (
+        <a
+          href={teamMemberPath(member.slug)}
+          class="reveal group flex shrink-0 cursor-pointer items-center gap-3 overflow-hidden bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:gap-3.5 md:block md:bg-transparent"
+          style={`transition-delay: ${index * 80}ms`}
+        >
+          <TeamPortrait
+            src={coverUrl}
+            alt={coverAlt}
+            monogram={monogram}
+            class="relative size-[4.5rem] shrink-0 sm:size-20 md:hidden"
+            imgClass="h-full w-full object-cover transition duration-500 group-active:scale-[1.03]"
+          />
+          <div class="min-w-0 flex-1 py-2 pr-3 md:hidden">
+            <h3 class="font-display text-[1.35rem] leading-none tracking-wide text-blush sm:text-[1.5rem]">
+              <I18nText uk={member.name.uk} en={member.name.en} />
+            </h3>
+            <span class="mt-1.5 inline-block text-[0.6rem] tracking-[0.16em] uppercase text-blush-soft/75 sm:mt-2 sm:text-[0.65rem]">
+              <I18nText uk={uk.team.viewPortfolio} en={en.team.viewPortfolio} />
+            </span>
+          </div>
+
+          <TeamPortrait
+            src={coverUrl}
+            alt={coverAlt}
+            monogram={monogram}
+            class="relative hidden aspect-[3/4] md:block"
+            imgClass="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.03]"
+          />
+          <div class="mt-5 hidden items-baseline justify-between gap-4 md:flex">
+            <h3 class="font-display text-3xl tracking-wide text-ink">
+              <I18nText uk={member.name.uk} en={member.name.en} />
+            </h3>
+            <span class="text-xs tracking-[0.18em] uppercase text-muted transition group-hover:text-ink">
+              <I18nText uk={uk.team.viewPortfolio} en={en.team.viewPortfolio} />
+            </span>
+          </div>
+        </a>
+      ))
+    }
+  </div>
+</section>

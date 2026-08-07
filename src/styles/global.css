@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Resagokr";
+  src: url("/fonts/resagokr.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-blush: #dfb4c4;
+  --color-ink: #252223;
+  --color-surface: #f7f2f4;
+  --color-blush-soft: #e8c9d4;
+  --color-muted: #6b5f63;
+
+  --font-brand: "Resagokr", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: max(3.25rem, calc(env(safe-area-inset-top) + 2.75rem));
+  }
+
+  /* Enable snap only after first paint — avoids jumping to a mid-page snap target on load */
+  html.is-snap-ready {
+    scroll-snap-type: y proximity;
+  }
+
+  body {
+    @apply bg-surface text-ink font-sans antialiased;
+  }
+
+  body.nav-open,
+  body.lightbox-open {
+    overflow: hidden;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-blush) 55%, transparent);
+  }
+
+  @media (max-width: 767px) {
+    html.is-snap-ready {
+      scroll-snap-type: y mandatory;
+    }
+
+    .reveal {
+      transform: translateY(0.75rem);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    html.is-snap-ready {
+      scroll-snap-type: none;
+    }
+  }
+}
+
+@layer utilities {
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .snap-section {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  /* Tall blocks (studio tour): snap to start, but allow scrolling past in one gesture */
+  .snap-section-soft {
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(1.25rem);
+    transition:
+      opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

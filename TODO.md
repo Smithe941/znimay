@@ -1,0 +1,121 @@
+# ЗНІМАЙ — офлайн TODO
+
+Що зробити поза кодом, щоб сайт наповнився і був готовий до релізу.
+
+## 1. Cloudinary — структура папок
+
+Актуальна структура (підключена в коді):
+
+```
+znimay/
+  team/
+    roman|olena|alex/
+      galleries/
+        {order}/          # число = порядок показу (2, 3, 100, 400…)
+          {galleryName}/  # portrait, street, ART, Video…
+      main/
+        hero/             # аватар / обкладинка на головній
+  space/                  # (опційно) матеріали простору
+```
+
+- [x] Структура в коді: `team/{member}/main/hero` + `team/{member}/galleries/{order}/{name}`
+- [x] Доставка стиснутих URL (~≤100KB): `f_auto` + `q_auto:eco` + ліміт ширини (presets у `cloudinary.ts`)
+- [x] Free-plan: 1 Search API pull на учасника + кеш на build; оригінали ніколи не віддаються
+- [ ] У `.env` / GitHub Secrets: `CLOUDINARY_BASE_FOLDER=znimay`
+- [ ] Secrets: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+- [ ] Залити hero + галереї для roman / olena / alex
+- [ ] Oleksandr на сайті мапиться на папку `alex`
+
+### Free plan — що важливо
+- У Cloudinary можна тримати originals у високій якості; сайт завжди тягне **transformed** URL.
+- Search API викликається лише під час `astro build` / `dev` (не з браузера).
+- Акаунт у **dynamic folders**: `public_id` плоский, папки = `asset_folder` — код шукає через `folder:…/*`, не через Admin `prefix`.
+- Не робити зайвих rebuild без потреби — кожен build = нові Search-запити.
+- Bandwidth рахується по доставлених (стиснутих) байтах, не по originals.
+
+## 2. Команда — обкладинки
+
+На лендінгу береться фото з `team/{member}/main/hero`.
+
+- [ ] Roman — `team/roman/main/hero`
+- [ ] Olena — `team/olena/main/hero`
+- [ ] Oleksandr — `team/alex/main/hero`  
+  (краще вертикаль ~3:4)
+
+## 3. Портфоліо авторів
+
+Сторінки `/uk/team/{roman|olena|oleksandr}/` показують галереї по порядку `order`.
+
+- [ ] Наповнити `galleries/{order}/{name}` фото
+- [ ] Єдиний стиль експорту
+- [x] Галерея `Video` (mp4) підтягується як відео + poster з Cloudinary
+
+## 4. Простір — 360° / virtual tour
+
+Граф уже зібраний (плейсхолдер-фото з кореня):
+
+```
+room_1_1 ↔ room_1_2
+room_1_* → room_2, room_3
+room_2 → room_1_1
+room_3 → room_1_1
+```
+
+- [x] Базовий Street View–тур з мітками (стрілки на панорамі)
+- [ ] Підкрутити позиції стрілок (`yaw`/`pitch`) у `src/data/spaces.ts` під реальні двері
+- [ ] Замінити плейсхолдери на фінальні 360 студії
+- [ ] Перейменувати таби «Кімната 1/2/3» на Циклорама / Гримерка / Лофт коли буде контент
+
+## 5. Hero
+
+- [ ] Обрати 1 сильне фото простору / зйомки під повноекранний hero  
+  (або залити в `znimay/studio/` першим — зараз hero бере перше з `studio/`)
+- [ ] Альтернатива: зафіксувати конкретний public_id у коді пізніше
+
+## 6. Тексти (обговорити й затвердити)
+
+UA + EN, тон: продакшн-студія з власним простором.
+
+- [ ] Hero tagline
+- [ ] Секція Команда — title / subtitle
+- [ ] Біо Roman / Olena / Oleksandr (коротко, 1–2 речення)
+- [ ] Простір — subtitle + назви зон (Циклорама / Гримерка / Лофт — чи інші?)
+- [ ] Контакти — subtitle
+- [ ] Чи потрібна ще одна зона в табах (подкаст / світлова / etc.)?
+
+Файли для правок після узгодження: `src/i18n/ui.ts`, `src/data/team.ts`, `src/data/spaces.ts`.
+
+## 7. Контакти й соцмережі
+
+- [x] Instagram: [@znimay_phstudio](https://www.instagram.com/znimay_phstudio/)
+- [ ] Чи додаємо Telegram / телефон / адресу студії?
+- [ ] Чи потрібна форма заявки (поки ні — поза скоупом)?
+
+## 8. Бренд
+
+- [x] Wordmark текстом Resagokr, uppercase **ЗНІМАЙ**, blush на ink
+- [ ] Фінально глянути лого / фавікон (зараз з вирізки) — чи робити окремий простий favicon «З»
+- [ ] Чи лишаємо EN-бренд теж як «ЗНІМАЙ», чи десь латиницею Znimay?
+
+## 9. Деплой / домен
+
+- [ ] GitHub Pages: Source → GitHub Actions
+- [ ] Додати secrets Cloudinary
+- [ ] Вирішити URL: project pages (`/holy_father_port`) чи окремий репо / кастомний домен `znimay.…`
+- [ ] Перейменувати репо під бренд, якщо треба
+
+## 10. Перед запуском — швидкий чек
+
+- [ ] Мобільний Safari + Chrome: меню, 360 (два пальці), таби простору
+- [ ] Перемикач UA/EN і збереження мови
+- [ ] Лого в навбарі з’являється лише після скролу з hero
+- [ ] Порожні галереї не світять «дірками» (або тексти empty ок)
+
+---
+
+### Пріоритет
+
+1. Cloudinary + фото команди/портфоліо  
+2. Тексти (tagline + біо)  
+3. Окремі 360 під зони  
+4. Hero + контакти + домен  

@@ -1,0 +1,147 @@
+---
+import '../styles/global.css';
+import type { Lang } from '../i18n/config';
+import { defaultLang } from '../i18n/config';
+import { t } from '../i18n/ui';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  /** @deprecated Language is chosen client-side; kept for title fallbacks */
+  lang?: Lang;
+  title?: string | { uk: string; en: string };
+  description?: string | { uk: string; en: string };
+  swapLogoAfterHero?: boolean;
+}
+
+const {
+  lang = defaultLang,
+  title,
+  description,
+  swapLogoAfterHero = false,
+} = Astro.props;
+
+const copyUk = t('uk');
+const copyEn = t('en');
+
+function pick(value: string | { uk: string; en: string } | undefined, which: Lang, fallback: string) {
+  if (!value) return fallback;
+  if (typeof value === 'string') return value;
+  return value[which];
+}
+
+const pageTitleUk = title
+  ? `${pick(title, 'uk', '')} · ${copyUk.meta.siteTitle}`
+  : copyUk.meta.siteTitle;
+const pageTitleEn = title
+  ? `${pick(title, 'en', typeof title === 'string' ? title : title.uk)} · ${copyEn.meta.siteTitle}`
+  : copyEn.meta.siteTitle;
+const pageDescriptionUk = pick(description, 'uk', copyUk.meta.siteDescription);
+const pageDescriptionEn = pick(description, 'en', copyEn.meta.siteDescription);
+const base = import.meta.env.BASE_URL;
+---
+
+<!doctype html>
+<html lang={lang} data-lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <script is:inline>
+      (function () {
+        // Avoid mid-page landings: browser scroll restore + mandatory snap fight on load
+        try {
+          if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+        } catch (e) {}
+        if (!location.hash) {
+          window.scrollTo(0, 0);
+        }
+        function enableSnap() {
+          document.documentElement.classList.add('is-snap-ready');
+        }
+        if (document.readyState === 'complete') {
+          requestAnimationFrame(enableSnap);
+        } else {
+          window.addEventListener('load', function () {
+            requestAnimationFrame(enableSnap);
+          });
+        }
+      })();
+    </script>
+    <script is:inline>
+      (function () {
+        var KEY = 'znimay-lang';
+        var COOKIE = 'znimay_lang';
+        var lang = null;
+        try {
+          lang = localStorage.getItem(KEY);
+        } catch (e) {}
+        if (lang !== 'uk' && lang !== 'en') {
+          var match = document.cookie.match(/(?:^|; )znimay_lang=([^;]*)/);
+          var cookieLang = match ? decodeURIComponent(match[1]) : null;
+          if (cookieLang === 'uk' || cookieLang === 'en') lang = cookieLang;
+        }
+        if (lang !== 'uk' && lang !== 'en') lang = 'uk';
+        document.documentElement.lang = lang;
+        document.documentElement.setAttribute('data-lang', lang);
+      })();
+    </script>
+    <style is:inline>
+      html[data-lang='uk'] .i18n-en {
+        display: none !important;
+      }
+      html[data-lang='en'] .i18n-uk {
+        display: none !important;
+      }
+    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={pageDescriptionUk} data-desc-uk={pageDescriptionUk} data-desc-en={pageDescriptionEn} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" href={`${base}favicon.ico`} sizes="any" />
+    <link rel="icon" type="image/png" href={`${base}favicon.png`} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
+    <title data-title-uk={pageTitleUk} data-title-en={pageTitleEn}>{pageTitleUk}</title>
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <Header swapLogoAfterHero={swapLogoAfterHero} />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+    <script is:inline define:vars={{ pageTitleUk, pageTitleEn, pageDescriptionUk, pageDescriptionEn }}>
+      (function () {
+        var lang = document.documentElement.getAttribute('data-lang') || 'uk';
+        var title = lang === 'en' ? pageTitleEn : pageTitleUk;
+        var desc = lang === 'en' ? pageDescriptionEn : pageDescriptionUk;
+        document.title = title;
+        var meta = document.querySelector('meta[name="description"]');
+        if (meta) meta.setAttribute('content', desc);
+      })();
+    </script>
+    <script>
+      import { persistLang } from '../lib/lang-preference';
+      const htmlLang = document.documentElement.getAttribute('data-lang');
+      if (htmlLang === 'uk' || htmlLang === 'en') {
+        persistLang(htmlLang);
+      }
+    </script>
+    <script>
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            }
+          }
+        },
+        { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
+      );
+
+      document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+    </script>
+  </body>
+</html>
