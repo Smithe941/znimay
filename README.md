@@ -17,10 +17,12 @@
 
 ```
 znimay/
-  studio/
-  roman/
-  olena/
-  oleksandr/
+  space/
+    locations/   # stills for Locations tab
+  team/
+    roman/
+    olena/
+    oleksandr/
 ```
 
 4. Встановіть залежності та запустіть:

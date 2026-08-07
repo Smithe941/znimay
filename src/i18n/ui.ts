@@ -2,19 +2,26 @@ import type { Lang } from './config';
 
 const uk = {
   meta: {
-    siteTitle: 'ЗНІМАЙ',
-    siteDescription: 'ЗНІМАЙ — продакшн-студія з власним простором: фото, відео, подкасти.',
+    siteTitle: 'ЗНІМАЙ — фотостудія в Черкасах',
+    siteDescription:
+      'Простора фотостудія в Черкасах. Фотосесії під ключ: сімейні, фешн, арт, бізнес. Зйомка відео будь-якого формату та супровід бізнесу.',
+    keywords:
+      'фотостудія Черкаси, фотосесія Черкаси, сімейна фотосесія, фешн зйомка, арт фото, бізнес фото, відеозйомка Черкаси, оренда студії, ЗНІМАЙ',
+    ogTitle: 'ЗНІМАЙ — простора фотостудія в Черкасах',
+    locale: 'uk_UA',
   },
   nav: {
     team: 'Портфоліо',
     studio: 'Простір',
+    services: 'Послуги',
     pricing: 'Прайс',
     contact: 'Контакти',
     home: 'Головна',
   },
   hero: {
     brand: 'ЗНІМАЙ',
-    tagline: 'Продакшн-студія з власним простором для фото, відео та подкастів.',
+    tagline:
+      'Простора фотостудія в Черкасах. Фотосесії під ключ — сімейні, фешн, арт, бізнес. Відео будь-якого формату.',
     ctaTeam: 'Команда',
     ctaContact: 'Звʼязатися',
   },
@@ -26,16 +33,30 @@ const uk = {
   studio: {
     title: 'Простір',
     subtitle:
-      'Простір із характером: біла циклорама, кілька постійних зон, а також можливість зібрати декорації під вашу історію.',
-    tabTour: '3D Тур',
+      'Студія з характером: циклорама, постійні зони й можливість зібрати декорації під вашу історію.',
+    tabInfo: 'Інфо',
     tabLocations: 'Локації',
+    tabTour: '3D Тур',
     roomsNav: 'Кімнати',
-    panoHint: 'Клікайте стрілки на панорамі · на телефоні — двома пальцями',
+    panoHint: 'Тягни, щоб оглянути · стрілки ведуть далі',
     panoLoading: 'Завантаження простору…',
-    locationsIntro:
-      'Частина простору вже живе своїм життям. Іншу — намалюємо разом з вами.',
     locationsPrev: 'Попередня локація',
     locationsNext: 'Наступна локація',
+    tourClose: 'Закрити тур',
+    advantages: [
+      'Окрема комфортна гримерка — місце не лише підготуватися до зйомки, а й зняти естетичний бʼюті-контент.',
+      'Великий майданчик, де за одну сесію можна змінити кілька образів і втілити різні ідеї.',
+      'Біла циклорама в центрі студії дає чисте поле без горизонту — простір для будь-якого кадру.',
+      'Зони від циклорами до пілону для танцю: різні настрої в одному просторі.',
+      'Команда допоможе продумати ідею й зібрати потрібну декорацію заздалегідь.',
+      'Повний світловий парк — імпульс, постійне й RGB, з модифікаторами та насадками під будь-яку задачу.',
+    ],
+  },
+  services: {
+    title: 'Послуги',
+    subtitle:
+      'Фото, відео, івенти та сертифікати — усе, що потрібно для вашої історії в кадрі.',
+    cta: 'Обговорити проєкт',
   },
   pricing: {
     title: 'Прайс',
@@ -49,7 +70,8 @@ const uk = {
   },
   contact: {
     title: 'Контакти',
-    subtitle: 'Напишіть, щоб обговорити проєкт або оренду простору.',
+    subtitle:
+      'Напишіть, щоб обговорити фотосесію, відеозйомку чи оренду студії в Черкасах.',
     telegramLabel: 'Telegram',
     instagramLabel: 'Instagram',
   },
@@ -80,19 +102,26 @@ const uk = {
 
 const en: typeof uk = {
   meta: {
-    siteTitle: 'ЗНІМАЙ',
-    siteDescription: 'ЗНІМАЙ — a production studio with its own space for photo, video, and podcasts.',
+    siteTitle: 'ZNIMAY — photo studio in Cherkasy',
+    siteDescription:
+      'A spacious photo studio in Cherkasy. Turnkey photoshoots: family, fashion, art, business. Video of any format and business content support.',
+    keywords:
+      'photo studio Cherkasy, photoshoot Cherkasy, family photoshoot, fashion shoot, art photography, business photography, video production Cherkasy, studio rental, ZNIMAY',
+    ogTitle: 'ZNIMAY — a spacious photo studio in Cherkasy',
+    locale: 'en_US',
   },
   nav: {
     team: 'Portfolio',
     studio: 'Space',
+    services: 'Services',
     pricing: 'Pricing',
     contact: 'Contact',
     home: 'Home',
   },
   hero: {
     brand: 'ЗНІМАЙ',
-    tagline: 'A production studio with its own space for photo, video, and podcasts.',
+    tagline:
+      'A spacious photo studio in Cherkasy. Turnkey photoshoots — family, fashion, art, business. Video of any format.',
     ctaTeam: 'Team',
     ctaContact: 'Get in touch',
   },
@@ -104,16 +133,29 @@ const en: typeof uk = {
   studio: {
     title: 'Space',
     subtitle:
-      'A basement with character: a white cyclorama, several standing zones — and room to shape a set around your story.',
-    tabTour: '3D Tour',
+      'A studio with character: a cyclorama, standing zones — and room to build a set around your story.',
+    tabInfo: 'Info',
     tabLocations: 'Locations',
+    tabTour: '3D Tour',
     roomsNav: 'Rooms',
-    panoHint: 'Click the arrows on the panorama · on mobile use two fingers',
+    panoHint: 'Drag to look around · arrows move you',
     panoLoading: 'Loading the space…',
-    locationsIntro:
-      'Some of the space already has a life of its own. The rest — we can invent with you.',
     locationsPrev: 'Previous location',
     locationsNext: 'Next location',
+    tourClose: 'Close tour',
+    advantages: [
+      'A private makeup room — not only for getting ready, but for clean beauty content of your own.',
+      'A large floor plan where several looks and ideas can live in a single session.',
+      'A white cyclorama at the heart of the studio: a seamless field for any frame.',
+      'Zones from cyclorama to a dance pole — different moods under one roof.',
+      'Our team will talk through your idea and build the set you need in advance.',
+      'A full light kit — strobe, continuous, and RGB — with modifiers and attachments for any brief.',
+    ],
+  },
+  services: {
+    title: 'Services',
+    subtitle: 'Photo, video, events, and certificates — everything for your story in frame.',
+    cta: 'Discuss a project',
   },
   pricing: {
     title: 'Pricing',
@@ -127,7 +169,7 @@ const en: typeof uk = {
   },
   contact: {
     title: 'Contact',
-    subtitle: 'Write to discuss a project or booking the space.',
+    subtitle: 'Write to discuss a photoshoot, video shoot, or studio rental in Cherkasy.',
     telegramLabel: 'Telegram',
     instagramLabel: 'Instagram',
   },

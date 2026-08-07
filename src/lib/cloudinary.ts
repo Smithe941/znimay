@@ -35,6 +35,8 @@ export const IMAGE_PRESETS = {
   hero: { width: 960, height: 720, crop: 'fill' as const },
   /** Homepage studio backdrop */
   studio: { width: 1280, height: 720, crop: 'fill' as const },
+  /** Locations tab stills (compact carousel) */
+  location: { width: 360, height: 480, crop: 'fill' as const },
   /** Lightbox — still compressed, never full-res */
   lightbox: { width: 1100, crop: 'limit' as const },
 } as const;
@@ -409,4 +411,9 @@ export async function fetchTeamImages(memberFolder: string): Promise<CloudImage[
 
 export async function fetchStudioImages() {
   return fetchFolderImages('space');
+}
+
+/** Location stills for the Studio → Locations tab: znimay/space/locations */
+export async function fetchLocationImages() {
+  return fetchFolderImages('space/locations');
 }

@@ -11,5 +11,9 @@ export default defineConfig({
   trailingSlash: 'always',
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      // Allow ngrok / LAN / any Host header in dev for now
+      allowedHosts: true,
+    },
   },
 });

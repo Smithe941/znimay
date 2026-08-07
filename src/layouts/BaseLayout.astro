@@ -11,6 +11,10 @@ interface Props {
   lang?: Lang;
   title?: string | { uk: string; en: string };
   description?: string | { uk: string; en: string };
+  /** Absolute or site-relative path for Open Graph / Twitter image */
+  ogImage?: string;
+  /** When true, emit homepage LocalBusiness JSON-LD */
+  structuredData?: boolean;
   swapLogoAfterHero?: boolean;
 }
 
@@ -18,6 +22,8 @@ const {
   lang = defaultLang,
   title,
   description,
+  ogImage,
+  structuredData = false,
   swapLogoAfterHero = false,
 } = Astro.props;
 
@@ -38,7 +44,71 @@ const pageTitleEn = title
   : copyEn.meta.siteTitle;
 const pageDescriptionUk = pick(description, 'uk', copyUk.meta.siteDescription);
 const pageDescriptionEn = pick(description, 'en', copyEn.meta.siteDescription);
+
+const ogTitleUk = title ? pageTitleUk : copyUk.meta.ogTitle;
+const ogTitleEn = title ? pageTitleEn : copyEn.meta.ogTitle;
+
+const site = Astro.site ?? new URL('https://smithe941.github.io');
+const canonical = new URL(Astro.url.pathname, site).href;
+const defaultOgPath = `${import.meta.env.BASE_URL}media/hero/KOS06571.jpg`.replace(/\/{2,}/g, '/');
+const ogImagePath = ogImage ?? defaultOgPath;
+const ogImageUrl = ogImagePath.startsWith('http')
+  ? ogImagePath
+  : new URL(ogImagePath, site).href;
+
 const base = import.meta.env.BASE_URL;
+
+const jsonLd = structuredData
+  ? {
+      '@context': 'https://schema.org',
+      '@type': ['LocalBusiness', 'PhotographyBusiness'],
+      name: 'ЗНІМАЙ',
+      alternateName: 'ZNIMAY',
+      description: copyUk.meta.siteDescription,
+      url: new URL(base, site).href,
+      image: ogImageUrl,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Черкаси',
+        addressRegion: 'Черкаська область',
+        addressCountry: 'UA',
+      },
+      areaServed: {
+        '@type': 'City',
+        name: 'Черкаси',
+      },
+      sameAs: [
+        'https://www.instagram.com/znimay_phstudio/',
+        'https://t.me/znimay_bot',
+      ],
+      makesOffer: [
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: 'Фотосесії під ключ',
+            description: 'Сімейні, фешн, арт та бізнес фотосесії',
+          },
+        },
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: 'Відеозйомка',
+            description: 'Зйомка відео будь-якого формату та супровід бізнесу',
+          },
+        },
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: 'Оренда фотостудії',
+            description: 'Простора фотостудія в Черкасах',
+          },
+        },
+      ],
+    }
+  : null;
 ---
 
 <!doctype html>
@@ -93,10 +163,67 @@ const base = import.meta.env.BASE_URL;
       }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={pageDescriptionUk} data-desc-uk={pageDescriptionUk} data-desc-en={pageDescriptionEn} />
+    <meta
+      name="description"
+      content={pageDescriptionUk}
+      data-desc-uk={pageDescriptionUk}
+      data-desc-en={pageDescriptionEn}
+    />
+    <meta
+      name="keywords"
+      content={copyUk.meta.keywords}
+      data-keywords-uk={copyUk.meta.keywords}
+      data-keywords-en={copyEn.meta.keywords}
+    />
+    <meta name="author" content="ЗНІМАЙ" />
+    <meta name="geo.region" content="UA-71" />
+    <meta name="geo.placename" content="Cherkasy" />
+    <meta name="theme-color" content="#1a1214" />
     <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={canonical} />
     <link rel="icon" href={`${base}favicon.ico`} sizes="any" />
     <link rel="icon" type="image/png" href={`${base}favicon.png`} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ЗНІМАЙ" />
+    <meta property="og:url" content={canonical} />
+    <meta
+      property="og:title"
+      content={ogTitleUk}
+      data-og-title-uk={ogTitleUk}
+      data-og-title-en={ogTitleEn}
+    />
+    <meta
+      property="og:description"
+      content={pageDescriptionUk}
+      data-og-desc-uk={pageDescriptionUk}
+      data-og-desc-en={pageDescriptionEn}
+    />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:alt" content={ogTitleUk} />
+    <meta
+      property="og:locale"
+      content={copyUk.meta.locale}
+      data-og-locale-uk={copyUk.meta.locale}
+      data-og-locale-en={copyEn.meta.locale}
+    />
+    <meta property="og:locale:alternate" content={copyEn.meta.locale} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content={ogTitleUk}
+      data-tw-title-uk={ogTitleUk}
+      data-tw-title-en={ogTitleEn}
+    />
+    <meta
+      name="twitter:description"
+      content={pageDescriptionUk}
+      data-tw-desc-uk={pageDescriptionUk}
+      data-tw-desc-en={pageDescriptionEn}
+    />
+    <meta name="twitter:image" content={ogImageUrl} />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -104,6 +231,7 @@ const base = import.meta.env.BASE_URL;
       rel="stylesheet"
     />
     <title data-title-uk={pageTitleUk} data-title-en={pageTitleEn}>{pageTitleUk}</title>
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
   </head>
   <body class="min-h-screen flex flex-col">
     <Header swapLogoAfterHero={swapLogoAfterHero} />
@@ -142,6 +270,65 @@ const base = import.meta.env.BASE_URL;
       );
 
       document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+    </script>
+    <script>
+      // Soft settle to nearest chapter after scroll stops (pairs with proximity snap)
+      (function initSmoothSnap() {
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduce) return;
+
+        const sections = Array.from(
+          document.querySelectorAll<HTMLElement>('.page-canvas > .chapter, .page-canvas > .snap-section'),
+        );
+        if (sections.length < 2) return;
+
+        let settleTimer = 0;
+        let animating = false;
+
+        function nearestTop() {
+          const y = window.scrollY;
+          let best: HTMLElement | null = null;
+          let bestDist = Infinity;
+          for (const el of sections) {
+            const top = el.getBoundingClientRect().top + window.scrollY;
+            const dist = Math.abs(top - y);
+            if (dist < bestDist) {
+              bestDist = dist;
+              best = el;
+            }
+          }
+          return { el: best, dist: bestDist };
+        }
+
+        function settle() {
+          if (animating) return;
+          if (document.body.classList.contains('nav-open')) return;
+          if (document.body.classList.contains('lightbox-open')) return;
+          if (!document.documentElement.classList.contains('is-snap-ready')) return;
+
+          const { el, dist } = nearestTop();
+          if (!el) return;
+          // Only gently finish the snap — ignore if far mid-section or already aligned
+          if (dist < 6 || dist > window.innerHeight * 0.42) return;
+
+          const top = el.getBoundingClientRect().top + window.scrollY;
+          animating = true;
+          window.scrollTo({ top, behavior: 'smooth' });
+          window.setTimeout(() => {
+            animating = false;
+          }, 450);
+        }
+
+        window.addEventListener(
+          'scroll',
+          () => {
+            if (animating) return;
+            window.clearTimeout(settleTimer);
+            settleTimer = window.setTimeout(settle, 90);
+          },
+          { passive: true },
+        );
+      })();
     </script>
   </body>
 </html>

@@ -1,152 +1,215 @@
 import type { Lang } from '../i18n/config';
 
-export type TourRoomId = 'room_1' | 'room_2' | 'room_3';
+export type TourRoomId = 'entrance' | 'room_1' | 'dressing';
 
-export type TourNodeId = 'room_1_1' | 'room_1_2' | 'room_2' | 'room_3';
+export type TourNodeId =
+  | 'entrance'
+  | 'room_1_1'
+  | 'room_1_2'
+  | 'room_1_3'
+  | 'room_1_4'
+  | 'dressing';
 
 /** forward = floor/path arrow; wall = plaque projected on a wall/door */
 export type TourLinkKind = 'forward' | 'wall';
+
+export type TourPlaqueArrow = 'up' | 'down' | 'left' | 'right';
 
 export type TourLink = {
   nodeId: TourNodeId;
   kind: TourLinkKind;
   position: { yaw: string; pitch: string };
   name: Record<Lang, string>;
+  /** Direction cue on wall plaques */
+  arrow?: TourPlaqueArrow;
 };
 
 export type TourNode = {
   id: TourNodeId;
   room: TourRoomId;
+  /** Low-res path under public/media/ — used for instant hops */
   panorama: string;
   name: Record<Lang, string>;
+  /** Initial camera look when entering this node */
+  view: { yaw: string; pitch: string };
+  /** Rotate the panorama on the sphere (e.g. pan: '180deg') */
+  sphereCorrection?: { pan?: string; tilt?: string; roll?: string };
   links: TourLink[];
 };
+
+/** HQ companion for a LQ tour panorama (`3d/x.JPG` → `3d/hq/x.JPG`) */
+export function panoramaHqPath(panorama: string): string {
+  return panorama.replace(/^3d\//, '3d/hq/');
+}
 
 export const tourRooms: {
   id: TourRoomId;
   startNodeId: TourNodeId;
   label: Record<Lang, string>;
-  /** Still preview for Locations tab */
+  /** Still preview for Locations tab fallback */
   preview: string;
   blurb: Record<Lang, string>;
 }[] = [
   {
     id: 'room_1',
-    startNodeId: 'room_1_1',
-    label: { uk: 'Циклорама', en: 'Cyclorama' },
-    preview: 'room_1_1.jpg',
+    startNodeId: 'room_1_4',
+    label: { uk: 'Фотостудія', en: 'Photo studio' },
+    preview: '3d/hq/room_1_4.JPG',
     blurb: {
-      uk: 'Біле поле без горизонту — контрольоване світло, глибока тінь, чистий кадр.',
-      en: 'A white field without a horizon — controlled light, deep shadow, a clean frame.',
+      uk: 'Велика фотостудія із зонами: циклорама, сети й пілон.',
+      en: 'A large photo studio with zones: cyclorama, sets, and a pole.',
     },
   },
   {
-    id: 'room_2',
-    startNodeId: 'room_2',
-    label: { uk: 'Зона 2', en: 'Zone 2' },
-    preview: 'room_2.jpg',
+    id: 'entrance',
+    startNodeId: 'entrance',
+    label: { uk: 'Вхід', en: 'Entrance' },
+    preview: '3d/hq/enterance.JPG',
     blurb: {
-      uk: 'Тихіший кут простору — для кадрів, яким потрібна близькість.',
-      en: 'A quieter corner of the space — for frames that need closeness.',
+      uk: 'Хол студії — звідси заходите у фотостудію.',
+      en: 'Studio lobby — from here you enter the photo studio.',
     },
   },
   {
-    id: 'room_3',
-    startNodeId: 'room_3',
-    label: { uk: 'Зона 3', en: 'Zone 3' },
-    preview: 'room_3.jpg',
+    id: 'dressing',
+    startNodeId: 'dressing',
+    label: { uk: 'Гримерка', en: 'Dressing' },
+    preview: '3d/hq/dressing.JPG',
     blurb: {
-      uk: 'Інший ритм у тій самій студії — змінюєш зону, змінюєш настрій.',
-      en: 'Another rhythm in the same studio — change the zone, change the mood.',
+      uk: 'Гримерка з дзеркалом, одягом і місцем підготуватися до зйомки.',
+      en: 'Dressing room with a mirror, wardrobe, and space to get ready.',
     },
   },
 ];
 
 /**
  * Graph:
- * room_1_1 ↔ room_1_2  (forward arrows)
- * room_1_* → room_2, room_3  (wall plaques)
- * room_2 / room_3 → room_1_1  (wall plaques)
+ * entrance → room_1_1
+ * room_1_1 ↔ room_1_2 ↔ room_1_3 ↔ room_1_4
+ * room_1_4 → dressing ↔ room_1_4
+ *
+ * World-zero alignment (shared look direction in the photo studio):
+ * room_1_4 landmark was at 274/0  → pan 274
+ * room_1_3 landmark was at 87/-2 → pan 267, tilt -2
+ * room_1_2 landmark was at 89/0  → pan 269
+ * room_1_1 landmark was at 87/0  → pan 267
+ * After correction, landmark ≈ yaw 0.
+ * room_1_4.view is only the tour open pose; node hops keep the prior camera.
  */
 export const tourNodes: TourNode[] = [
   {
+    id: 'entrance',
+    room: 'entrance',
+    panorama: '3d/enterance.JPG',
+    name: { uk: 'Вхід', en: 'Entrance' },
+    view: { yaw: '0deg', pitch: '-15deg' },
+    links: [
+      {
+        nodeId: 'room_1_1',
+        kind: 'wall',
+        position: { yaw: '-15deg', pitch: '-45deg' },
+        name: { uk: 'Фотостудія', en: 'Photo studio' },
+        arrow: 'down',
+      },
+    ],
+  },
+  {
     id: 'room_1_1',
     room: 'room_1',
-    panorama: 'room_1_1.jpg',
-    name: { uk: 'Циклорама · точка 1', en: 'Cyclorama · view 1' },
+    panorama: '3d/room_1_1.JPG',
+    name: { uk: 'Фотостудія', en: 'Photo studio' },
+    view: { yaw: '0deg', pitch: '0deg' },
+    sphereCorrection: { pan: '267deg' },
     links: [
       {
         nodeId: 'room_1_2',
         kind: 'forward',
-        position: { yaw: '235deg', pitch: '-8deg' },
-        name: { uk: 'Далі по зоні', en: 'Further in the zone' },
-      },
-      {
-        nodeId: 'room_2',
-        kind: 'wall',
-        // doorway area — mid wall height
-        position: { yaw: '-105deg', pitch: '2deg' },
-        name: { uk: 'Зона 2', en: 'Zone 2' },
-      },
-      {
-        nodeId: 'room_3',
-        kind: 'wall',
-        position: { yaw: '140deg', pitch: '2deg' },
-        name: { uk: 'Зона 3', en: 'Zone 3' },
+        position: { yaw: '-177deg', pitch: '-55deg' },
+        name: { uk: 'Далі', en: 'Further' },
       },
     ],
   },
   {
     id: 'room_1_2',
     room: 'room_1',
-    panorama: 'room_1_2.jpg',
-    name: { uk: 'Циклорама · точка 2', en: 'Cyclorama · view 2' },
+    panorama: '3d/room_1_2.JPG',
+    name: { uk: 'Фотостудія', en: 'Photo studio' },
+    view: { yaw: '0deg', pitch: '0deg' },
+    sphereCorrection: { pan: '269deg' },
     links: [
       {
         nodeId: 'room_1_1',
         kind: 'forward',
-        position: { yaw: '130deg', pitch: '-8deg' },
-        name: { uk: 'Назад по зоні', en: 'Back in the zone' },
+        position: { yaw: '1deg', pitch: '-55deg' },
+        name: { uk: 'Назад', en: 'Back' },
       },
       {
-        nodeId: 'room_2',
-        kind: 'wall',
-        position: { yaw: '-125deg', pitch: '2deg' },
-        name: { uk: 'Зона 2', en: 'Zone 2' },
-      },
-      {
-        nodeId: 'room_3',
-        kind: 'wall',
-        position: { yaw: '100deg', pitch: '2deg' },
-        name: { uk: 'Зона 3', en: 'Zone 3' },
+        nodeId: 'room_1_3',
+        kind: 'forward',
+        position: { yaw: '-179deg', pitch: '-55deg' },
+        name: { uk: 'Далі', en: 'Further' },
       },
     ],
   },
   {
-    id: 'room_2',
-    room: 'room_2',
-    panorama: 'room_2.jpg',
-    name: { uk: 'Зона 2', en: 'Zone 2' },
+    id: 'room_1_3',
+    room: 'room_1',
+    panorama: '3d/room_1_3.JPG',
+    name: { uk: 'Фотостудія', en: 'Photo studio' },
+    view: { yaw: '0deg', pitch: '0deg' },
+    sphereCorrection: { pan: '267deg', tilt: '-2deg' },
     links: [
       {
-        nodeId: 'room_1_1',
-        kind: 'wall',
-        position: { yaw: '75deg', pitch: '2deg' },
-        name: { uk: 'Циклорама', en: 'Cyclorama' },
+        nodeId: 'room_1_2',
+        kind: 'forward',
+        position: { yaw: '-7deg', pitch: '-53deg' },
+        name: { uk: 'Назад', en: 'Back' },
+      },
+      {
+        nodeId: 'room_1_4',
+        kind: 'forward',
+        position: { yaw: '173deg', pitch: '-53deg' },
+        name: { uk: 'Далі', en: 'Further' },
       },
     ],
   },
   {
-    id: 'room_3',
-    room: 'room_3',
-    panorama: 'room_3.jpg',
-    name: { uk: 'Зона 3', en: 'Zone 3' },
+    id: 'room_1_4',
+    room: 'room_1',
+    panorama: '3d/room_1_4.JPG',
+    name: { uk: 'Фотостудія', en: 'Photo studio' },
+    /** Opening pose only — transitions keep the previous camera (Street View style) */
+    view: { yaw: '30deg', pitch: '0deg' },
+    sphereCorrection: { pan: '274deg' },
     links: [
       {
-        nodeId: 'room_1_1',
+        nodeId: 'room_1_3',
+        kind: 'forward',
+        position: { yaw: '-4deg', pitch: '-55deg' },
+        name: { uk: 'Назад', en: 'Back' },
+      },
+      {
+        nodeId: 'dressing',
         kind: 'wall',
-        position: { yaw: '35deg', pitch: '2deg' },
-        name: { uk: 'Циклорама', en: 'Cyclorama' },
+        position: { yaw: '86deg', pitch: '0deg' },
+        name: { uk: 'Гримерка', en: 'Dressing' },
+        arrow: 'up',
+      },
+    ],
+  },
+  {
+    id: 'dressing',
+    room: 'dressing',
+    panorama: '3d/dressing.JPG',
+    name: { uk: 'Гримерка', en: 'Dressing' },
+    view: { yaw: '0deg', pitch: '0deg' },
+    links: [
+      {
+        nodeId: 'room_1_4',
+        kind: 'wall',
+        position: { yaw: '322deg', pitch: '0deg' },
+        name: { uk: 'Фотостудія', en: 'Photo studio' },
+        arrow: 'up',
       },
     ],
   },

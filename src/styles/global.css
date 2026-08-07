@@ -36,8 +36,16 @@
   }
 
   body.nav-open,
-  body.lightbox-open {
+  body.lightbox-open,
+  body.tour-open {
     overflow: hidden;
+  }
+
+  /* Tour modal portals to body; keep chrome clear of the fixed nav */
+  body.tour-open > header,
+  body.tour-open > #mobile-nav {
+    visibility: hidden;
+    pointer-events: none;
   }
 
   ::selection {
@@ -45,10 +53,6 @@
   }
 
   @media (max-width: 767px) {
-    html.is-snap-ready {
-      scroll-snap-type: y mandatory;
-    }
-
     .reveal {
       transform: translateY(0.75rem);
     }
@@ -80,13 +84,52 @@
 
   .snap-section {
     scroll-snap-align: start;
-    scroll-snap-stop: always;
+    scroll-snap-stop: normal;
   }
 
   /* Tall blocks (studio tour): snap to start, but allow scrolling past in one gesture */
   .snap-section-soft {
     scroll-snap-align: start;
     scroll-snap-stop: normal;
+  }
+
+  /* Continuous page canvas — chapters feel like frames of one film */
+  .page-canvas {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .chapter {
+    position: relative;
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
+  }
+
+  .chapter--soft {
+    scroll-snap-stop: normal;
+  }
+
+  .chapter--ink {
+    background: var(--color-ink);
+    color: var(--color-blush-soft);
+  }
+
+  .chapter--surface {
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  .chapter-frame {
+    display: flex;
+    min-height: 100svh;
+    min-height: 100dvh;
+    flex-direction: column;
+  }
+
+  .chapter-sticky {
+    position: sticky;
+    top: max(3.25rem, calc(env(safe-area-inset-top) + 2.75rem));
+    z-index: 1;
   }
 
   .reveal {

@@ -15,51 +15,56 @@ const tabs = [
 
 <section
   id="pricing"
-  class="snap-section min-h-[100svh] min-h-[100dvh] px-4 pt-[max(3.5rem,calc(env(safe-area-inset-top)+2.75rem))] pb-12 sm:px-6 sm:pt-14 sm:pb-16 md:px-8 md:pt-14 md:pb-20"
+  class="chapter chapter--surface snap-section flex h-[100svh] h-[100dvh] flex-col overflow-hidden px-4 pt-[max(4rem,calc(env(safe-area-inset-top)+3.25rem))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-16 md:px-8 md:pt-[4.5rem]"
 >
-  <div class="mx-auto max-w-6xl" data-pricing>
-    <div class="reveal mb-5 max-w-xl sm:mb-6 md:mb-8">
-      <h2 class="font-display text-[2.35rem] leading-none sm:text-4xl md:text-5xl">
-        <I18nText uk={uk.pricing.title} en={en.pricing.title} />
-      </h2>
-      <p class="mt-2 text-[0.95rem] leading-snug text-muted sm:text-base sm:leading-relaxed">
-        <I18nText uk={uk.pricing.subtitle} en={en.pricing.subtitle} />
-      </p>
-    </div>
+  <div class="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col" data-pricing>
+    <div class="shrink-0">
+      <div class="mb-4 max-w-xl sm:mb-5 md:mb-6">
+        <h2 class="font-display text-[2.35rem] leading-none sm:text-4xl md:text-5xl">
+          <I18nText uk={uk.pricing.title} en={en.pricing.title} />
+        </h2>
+        <p class="mt-2 text-[0.95rem] leading-snug text-muted sm:text-base sm:leading-relaxed">
+          <I18nText uk={uk.pricing.subtitle} en={en.pricing.subtitle} />
+        </p>
+      </div>
 
-    <div
-      class="reveal -mx-4 border-y border-ink/10 sm:-mx-6 md:-mx-8"
-      role="tablist"
-      aria-label={uk.pricing.title}
-      data-pricing-tabs
-    >
-      <div class="flex">
-        {
-          tabs.map((tab, index) => (
-            <button
-              type="button"
-              role="tab"
-              id={`pricing-tab-${tab.id}`}
-              class="pricing-tab flex-1 cursor-pointer py-3.5 text-center text-[0.7rem] tracking-[0.14em] uppercase transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:py-4 sm:text-xs sm:tracking-[0.16em]"
-              aria-selected={index === 0 ? 'true' : 'false'}
-              aria-controls={`pricing-panel-${tab.id}`}
-              data-pricing-tab={tab.id}
-              data-active={index === 0 ? 'true' : 'false'}
-              tabindex={index === 0 ? 0 : -1}
-            >
-              <I18nText uk={tab.uk} en={tab.en} />
-            </button>
-          ))
-        }
+      <div
+        class="-mx-4 border-y border-ink/10 sm:-mx-6 md:-mx-8"
+        role="tablist"
+        aria-label={uk.pricing.title}
+        data-pricing-tabs
+      >
+        <div class="flex">
+          {
+            tabs.map((tab, index) => (
+              <button
+                type="button"
+                role="tab"
+                id={`pricing-tab-${tab.id}`}
+                class="pricing-tab flex-1 cursor-pointer py-3.5 text-center text-[0.7rem] tracking-[0.14em] uppercase transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:py-4 sm:text-xs sm:tracking-[0.16em]"
+                aria-selected={index === 0 ? 'true' : 'false'}
+                aria-controls={`pricing-panel-${tab.id}`}
+                data-pricing-tab={tab.id}
+                data-active={index === 0 ? 'true' : 'false'}
+                tabindex={index === 0 ? 0 : -1}
+              >
+                <I18nText uk={tab.uk} en={tab.en} />
+              </button>
+            ))
+          }
+        </div>
       </div>
     </div>
 
+    <div
+      class="min-h-0 flex-1 overflow-y-auto overscroll-y-auto pt-5 sm:pt-6"
+      data-pricing-scroll
+    >
     <div
       id="pricing-panel-shoot"
       role="tabpanel"
       aria-labelledby="pricing-tab-shoot"
       data-pricing-panel="shoot"
-      class="pt-6 sm:pt-8"
     >
       <p class="mb-5 text-[0.9rem] leading-snug text-muted sm:mb-6 sm:text-[0.95rem]">
         <I18nText uk={uk.pricing.shootLead} en={en.pricing.shootLead} />
@@ -129,7 +134,7 @@ const tabs = [
       role="tabpanel"
       aria-labelledby="pricing-tab-rent"
       data-pricing-panel="rent"
-      class="hidden pt-6 sm:pt-8"
+      class="hidden"
       hidden
     >
       <p class="text-[0.9rem] leading-snug text-muted sm:text-[0.95rem]">
@@ -163,7 +168,7 @@ const tabs = [
       role="tabpanel"
       aria-labelledby="pricing-tab-video"
       data-pricing-panel="video"
-      class="hidden pt-6 sm:pt-8"
+      class="hidden"
       hidden
     >
       <p class="text-[0.9rem] leading-snug text-muted sm:text-[0.95rem]">
@@ -188,6 +193,7 @@ const tabs = [
         <I18nText uk={uk.pricing.ctaDiscuss} en={en.pricing.ctaDiscuss} />
       </a>
     </div>
+    </div>
   </div>
 </section>
 
@@ -209,6 +215,7 @@ const tabs = [
 
 <script>
   const root = document.querySelector('[data-pricing]');
+  const scrollRoot = document.querySelector<HTMLElement>('[data-pricing-scroll]');
   if (root) {
     const tabs = [...root.querySelectorAll<HTMLElement>('[data-pricing-tab]')];
     const panels = [...root.querySelectorAll<HTMLElement>('[data-pricing-panel]')];
@@ -225,6 +232,7 @@ const tabs = [
         panel.hidden = !on;
         panel.classList.toggle('hidden', !on);
       });
+      scrollRoot?.scrollTo({ top: 0 });
     }
 
     tabs.forEach((tab) => {
