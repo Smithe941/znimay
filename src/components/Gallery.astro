@@ -22,6 +22,8 @@ const en = t('en');
 const lightboxId = `${id}-lightbox`;
 const imageId = `${id}-lightbox-image`;
 const videoId = `${id}-lightbox-video`;
+/** First two rows + the peeking next row (mobile 2-col / desktop 3-col). */
+const eagerCount = columns === 2 ? 6 : 9;
 const gridClass =
   columns === 2
     ? 'grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3'
@@ -32,7 +34,12 @@ const gridClass =
   images.length === 0 ? (
     <p class="reveal text-muted">{emptyLabel}</p>
   ) : (
-    <div class={gridClass} data-gallery={id} data-gallery-loaded={loadMedia ? 'true' : 'false'}>
+    <div
+      class={gridClass}
+      data-gallery={id}
+      data-gallery-loaded={loadMedia ? 'true' : 'false'}
+      data-eager-count={eagerCount}
+    >
       {images.map((image, index) => {
         const isVideo = image.resourceType === 'video';
         const thumb = imageUrl(image.publicId, {
@@ -45,11 +52,12 @@ const gridClass =
           videoStream: isVideo,
         });
         const tall = image.height > image.width * 1.15;
+        const eager = index < eagerCount;
         return (
           <button
             type="button"
             class:list={[
-              'reveal group relative block w-full cursor-pointer overflow-hidden bg-ink text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blush focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+              'reveal reveal-peek group relative block w-full cursor-pointer overflow-hidden bg-ink text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blush focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
               tall && 'row-span-2',
             ]}
             style={`transition-delay: ${Math.min(index * 40, 240)}ms`}
@@ -65,12 +73,14 @@ const gridClass =
               src={loadMedia ? thumb : undefined}
               data-src={thumb}
               alt={image.alt}
-              loading={loadMedia ? 'lazy' : undefined}
+              loading={loadMedia ? (eager ? 'eager' : 'lazy') : undefined}
+              fetchpriority={loadMedia && index < columns ? 'high' : undefined}
+              decoding="async"
               width={image.width || undefined}
               height={image.height || undefined}
               class:list={[
                 'w-full object-cover transition duration-700 ease-out group-active:opacity-90 md:group-hover:scale-[1.02] md:group-hover:opacity-90',
-                tall ? 'h-full min-h-[14rem] sm:min-h-[18rem]' : 'aspect-[4/5] sm:aspect-[3/4]',
+                tall ? 'h-full min-h-[12rem] sm:min-h-[18rem]' : 'aspect-[3/4] sm:aspect-[3/4]',
               ]}
             />
             {isVideo && (
@@ -92,7 +102,7 @@ const gridClass =
 
 <dialog
   id={lightboxId}
-  class="m-0 h-full max-h-none w-full max-w-none border-0 bg-ink/95 p-0 text-surface backdrop:bg-transparent"
+  class="gallery-lightbox m-0 h-full max-h-none w-full max-w-none border-0 p-0 text-surface"
 >
   <div
     class="relative flex h-full w-full cursor-pointer items-center justify-center p-3 sm:p-6 md:p-10"
@@ -111,7 +121,7 @@ const gridClass =
 
     <button
       type="button"
-      class="absolute left-[max(0.5rem,env(safe-area-inset-left))] top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center border border-blush/35 text-blush transition hover:border-blush hover:bg-blush/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush active:opacity-70 sm:left-[max(1rem,env(safe-area-inset-left))] sm:h-14 sm:w-14"
+      class="absolute left-[max(0.5rem,env(safe-area-inset-left))] top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center border border-blush/35 text-blush transition hover:border-blush hover:bg-blush/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush active:opacity-70 md:flex sm:left-[max(1rem,env(safe-area-inset-left))] sm:h-14 sm:w-14"
       data-lightbox-prev
       aria-label={uk.portfolio.lightboxPrev}
       data-label-uk={uk.portfolio.lightboxPrev}
@@ -130,7 +140,7 @@ const gridClass =
 
     <button
       type="button"
-      class="absolute right-[max(0.5rem,env(safe-area-inset-right))] top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center border border-blush/35 text-blush transition hover:border-blush hover:bg-blush/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush active:opacity-70 sm:right-[max(1rem,env(safe-area-inset-right))] sm:h-14 sm:w-14"
+      class="absolute right-[max(0.5rem,env(safe-area-inset-right))] top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center border border-blush/35 text-blush transition hover:border-blush hover:bg-blush/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush active:opacity-70 md:flex sm:right-[max(1rem,env(safe-area-inset-right))] sm:h-14 sm:w-14"
       data-lightbox-next
       aria-label={uk.portfolio.lightboxNext}
       data-label-uk={uk.portfolio.lightboxNext}
@@ -151,12 +161,12 @@ const gridClass =
       id={imageId}
       src=""
       alt=""
-      class="hidden max-h-[85dvh] max-w-[min(100%,calc(100%-5.5rem))] cursor-default object-contain opacity-0 transition-opacity duration-300 sm:max-w-[min(100%,calc(100%-8rem))]"
+      class="hidden max-h-[85dvh] max-w-[min(100%,calc(100%-1.5rem))] cursor-default object-contain opacity-0 transition-opacity duration-300 md:max-w-[min(100%,calc(100%-8rem))]"
       data-lightbox-media="image"
     />
     <video
       id={videoId}
-      class="lightbox-video hidden max-h-[85dvh] max-w-[min(100%,calc(100%-5.5rem))] cursor-default object-contain opacity-0 transition-opacity duration-300 sm:max-w-[min(100%,calc(100%-8rem))]"
+      class="lightbox-video hidden max-h-[85dvh] max-w-[min(100%,calc(100%-1.5rem))] cursor-default object-contain opacity-0 transition-opacity duration-300 md:max-w-[min(100%,calc(100%-8rem))]"
       controls
       playsinline
       data-lightbox-media="video"
@@ -188,6 +198,11 @@ const gridClass =
     : [];
 
   let currentIndex = -1;
+  let swipeStartX = 0;
+  let swipeStartY = 0;
+  let swipeTracking = false;
+  let swipeMoved = false;
+  let swipeAxis = null;
 
   function showMedia(el) {
     if (!el) return;
@@ -232,8 +247,12 @@ const gridClass =
 
   function updateNavVisibility() {
     const multi = items.length > 1;
-    prevBtn?.classList.toggle('hidden', !multi);
-    nextBtn?.classList.toggle('hidden', !multi);
+    for (const btn of [prevBtn, nextBtn]) {
+      if (!(btn instanceof HTMLElement)) continue;
+      btn.classList.toggle('pointer-events-none', !multi);
+      btn.classList.toggle('opacity-0', !multi);
+      btn.setAttribute('tabindex', multi ? '0' : '-1');
+    }
   }
 
   function showItem(index) {
@@ -328,8 +347,69 @@ const gridClass =
 
   // Backdrop / empty stage click closes (not media or controls)
   stage?.addEventListener('click', (event) => {
+    if (swipeMoved) {
+      swipeMoved = false;
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     if (event.target === stage) closeLightbox();
   });
+
+  stage?.addEventListener(
+    'touchstart',
+    (event) => {
+      if (!dialog?.open || event.touches.length !== 1 || items.length < 2) return;
+      swipeStartX = event.touches[0].clientX;
+      swipeStartY = event.touches[0].clientY;
+      swipeTracking = true;
+      swipeMoved = false;
+      swipeAxis = null;
+    },
+    { passive: true },
+  );
+
+  stage?.addEventListener(
+    'touchmove',
+    (event) => {
+      if (!swipeTracking || event.touches.length !== 1) return;
+      const dx = event.touches[0].clientX - swipeStartX;
+      const dy = event.touches[0].clientY - swipeStartY;
+      if (!swipeAxis) {
+        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+        swipeAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+      }
+      if (swipeAxis === 'x' && event.cancelable) event.preventDefault();
+    },
+    { passive: false },
+  );
+
+  stage?.addEventListener(
+    'touchend',
+    (event) => {
+      if (!swipeTracking) return;
+      swipeTracking = false;
+      const axis = swipeAxis;
+      swipeAxis = null;
+      const t = event.changedTouches[0];
+      const dx = t.clientX - swipeStartX;
+      const dy = t.clientY - swipeStartY;
+      if (axis !== 'x' || Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
+      swipeMoved = true;
+      if (dx < 0) goNext();
+      else goPrev();
+    },
+    { passive: true },
+  );
+
+  stage?.addEventListener(
+    'touchcancel',
+    () => {
+      swipeTracking = false;
+      swipeAxis = null;
+    },
+    { passive: true },
+  );
   dialog?.addEventListener('click', (event) => {
     if (event.target === dialog) closeLightbox();
   });
@@ -363,4 +443,44 @@ const gridClass =
   });
 
   window.addEventListener('znimay:lang', syncNavLabels);
+
+  // Native lazy often waits until a tile is well inside the viewport, so a
+  // barely-visible next row stays blank. Promote those images early.
+  function forceLoadImg(img) {
+    if (!(img instanceof HTMLImageElement)) return;
+    const src = img.getAttribute('data-src') || img.getAttribute('src');
+    if (!src) return;
+    if (img.getAttribute('loading') === 'lazy') img.loading = 'eager';
+    if (img.getAttribute('src') !== src) img.src = src;
+    else if (!img.complete) {
+      // Re-assign to nudge browsers that deferred a lazy src
+      img.src = src;
+    }
+  }
+
+  function warmNearGalleryImages() {
+    if (!root || !('IntersectionObserver' in window)) return;
+    const lazyImgs = root.querySelectorAll('img[loading="lazy"], img:not([src])');
+    if (!lazyImgs.length) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          forceLoadImg(entry.target);
+          io.unobserve(entry.target);
+        }
+      },
+      // ~one viewport ahead so the peeking next row is already decoded
+      { root: null, rootMargin: '120% 0px', threshold: 0.01 },
+    );
+
+    lazyImgs.forEach((img) => io.observe(img));
+  }
+
+  warmNearGalleryImages();
+  root?.addEventListener('znimay:gallery-media', () => {
+    // Deferred tab galleries: warm the peek row after src is attached
+    requestAnimationFrame(warmNearGalleryImages);
+  });
 </script>

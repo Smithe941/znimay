@@ -9,6 +9,9 @@ export default defineConfig({
   site: 'https://smithe941.github.io',
   base,
   trailingSlash: 'always',
+  devToolbar: {
+    enabled: false,
+  },
   vite: {
     plugins: [tailwindcss()],
     server: {

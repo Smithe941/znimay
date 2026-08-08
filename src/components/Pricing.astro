@@ -15,15 +15,15 @@ const tabs = [
 
 <section
   id="pricing"
-  class="chapter chapter--surface snap-section flex h-[100svh] h-[100dvh] flex-col overflow-hidden px-4 pt-[max(4rem,calc(env(safe-area-inset-top)+3.25rem))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-16 md:px-8 md:pt-[4.5rem]"
+  class="chapter chapter--surface snap-section flex flex-col px-4 pt-[max(5.25rem,calc(env(safe-area-inset-top)+4.5rem))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-20 md:h-[100svh] md:h-[100dvh] md:overflow-hidden md:px-8 md:pt-24"
 >
   <div class="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col" data-pricing>
     <div class="shrink-0">
       <div class="mb-4 max-w-xl sm:mb-5 md:mb-6">
-        <h2 class="font-display text-[2.35rem] leading-none sm:text-4xl md:text-5xl">
+        <h2 class="hidden font-display text-[2.35rem] leading-none sm:text-4xl md:block md:text-5xl">
           <I18nText uk={uk.pricing.title} en={en.pricing.title} />
         </h2>
-        <p class="mt-2 text-[0.95rem] leading-snug text-muted sm:text-base sm:leading-relaxed">
+        <p class="mt-2 text-[0.95rem] leading-snug text-muted sm:text-base sm:leading-relaxed max-md:mt-0">
           <I18nText uk={uk.pricing.subtitle} en={en.pricing.subtitle} />
         </p>
       </div>
@@ -57,7 +57,7 @@ const tabs = [
     </div>
 
     <div
-      class="min-h-0 flex-1 overflow-y-auto overscroll-y-auto pt-5 sm:pt-6"
+      class="min-h-0 pt-5 sm:pt-6 md:flex-1 md:overflow-y-auto md:overscroll-y-auto"
       data-pricing-scroll
     >
     <div

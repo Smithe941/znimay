@@ -24,10 +24,11 @@ const cards = await Promise.all(
 
 <section
   id="team"
-  class="chapter chapter--surface snap-section chapter-frame px-4 pt-[max(4rem,calc(env(safe-area-inset-top)+3.25rem))] pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-16 sm:pb-12 md:pt-[4.5rem] md:pb-16"
+  data-tab="portfolio"
+  class="chapter chapter--surface snap-section flex flex-col px-4 pt-[max(5.25rem,calc(env(safe-area-inset-top)+4.5rem))] pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-20 sm:pb-12 md:overflow-hidden md:pt-24 md:pb-8"
 >
   <div class="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col md:px-8">
-    <div class="reveal mb-4 max-w-xl shrink-0 sm:mb-6 md:mb-10">
+    <div class="reveal mb-3 max-w-xl shrink-0 sm:mb-6 md:mb-6">
       <h2 class="font-display text-[1.85rem] leading-none sm:text-4xl md:text-5xl">
         <I18nText uk={uk.team.title} en={en.team.title} />
       </h2>
@@ -36,39 +37,53 @@ const cards = await Promise.all(
       </p>
     </div>
 
-    <div class="flex min-h-0 flex-1 flex-col justify-center gap-2 sm:gap-2.5 md:grid md:flex-none md:grid-cols-3 md:justify-start md:gap-8">
+    <!-- Mobile: three artists fill one viewport -->
+    <div class="portfolio-mobile-grid md:hidden" data-portfolio-mobile>
       {
         cards.map(({ member, coverUrl, coverAlt, monogram }, index) => (
           <a
             href={teamMemberPath(member.slug)}
-            class="reveal group flex shrink-0 cursor-pointer items-center gap-3 overflow-hidden bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:gap-3.5 md:block md:bg-transparent"
+            class="portfolio-mobile-card reveal group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            style={`transition-delay: ${index * 50}ms`}
+          >
+            <TeamPortrait
+              src={coverUrl}
+              alt={coverAlt}
+              monogram={monogram}
+              class="absolute inset-0 h-full w-full"
+              imgClass="h-full w-full object-cover transition duration-500 group-active:scale-[1.02]"
+            />
+            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent px-3 pb-2.5 pt-10">
+              <h3 class="font-display text-[1.35rem] leading-none tracking-wide text-blush">
+                <I18nText uk={member.name.uk} en={member.name.en} />
+              </h3>
+              <span class="mt-1 inline-block text-[0.58rem] tracking-[0.14em] uppercase text-blush-soft/80">
+                <I18nText uk={uk.team.viewPortfolio} en={en.team.viewPortfolio} />
+              </span>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+
+    <!-- Desktop: existing grid -->
+    <div class="hidden min-h-0 flex-1 md:grid md:grid-cols-3 md:gap-8">
+      {
+        cards.map(({ member, coverUrl, coverAlt, monogram }, index) => (
+          <a
+            href={teamMemberPath(member.slug)}
+            class="reveal group flex h-full min-h-0 cursor-pointer flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
             style={`transition-delay: ${index * 80}ms`}
           >
             <TeamPortrait
               src={coverUrl}
               alt={coverAlt}
               monogram={monogram}
-              class="relative size-[4.5rem] shrink-0 sm:size-20 md:hidden"
-              imgClass="h-full w-full object-cover transition duration-500 group-active:scale-[1.03]"
+              class="relative min-h-0 w-full flex-1"
+              imgClass="absolute inset-0 h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.03]"
             />
-            <div class="min-w-0 flex-1 py-2 pr-3 md:hidden">
-              <h3 class="font-display text-[1.35rem] leading-none tracking-wide text-blush sm:text-[1.5rem]">
-                <I18nText uk={member.name.uk} en={member.name.en} />
-              </h3>
-              <span class="mt-1.5 inline-block text-[0.6rem] tracking-[0.16em] uppercase text-blush-soft/75 sm:mt-2 sm:text-[0.65rem]">
-                <I18nText uk={uk.team.viewPortfolio} en={en.team.viewPortfolio} />
-              </span>
-            </div>
-
-            <TeamPortrait
-              src={coverUrl}
-              alt={coverAlt}
-              monogram={monogram}
-              class="relative hidden aspect-[3/4] md:block"
-              imgClass="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.03]"
-            />
-            <div class="mt-5 hidden items-baseline justify-between gap-4 md:flex">
-              <h3 class="font-display text-3xl tracking-wide text-ink">
+            <div class="mt-3 flex shrink-0 items-baseline justify-between gap-4 md:mt-4">
+              <h3 class="font-display text-2xl tracking-wide text-ink lg:text-3xl">
                 <I18nText uk={member.name.uk} en={member.name.en} />
               </h3>
               <span class="text-xs tracking-[0.18em] uppercase text-muted transition group-hover:text-ink">

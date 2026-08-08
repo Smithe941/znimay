@@ -8,9 +8,11 @@ import I18nText from './I18nText.astro';
 interface Props {
   /** When true, nav logo stays hidden until hero brand scrolls out of view */
   swapLogoAfterHero?: boolean;
+  /** Home page mobile app-shell — hide hamburger (tabs replace it) */
+  mobileApp?: boolean;
 }
 
-const { swapLogoAfterHero = false } = Astro.props;
+const { swapLogoAfterHero = false, mobileApp = false } = Astro.props;
 const uk = t('uk');
 const en = t('en');
 ---
@@ -84,31 +86,52 @@ const en = t('en');
         </svg>
       </a>
 
-      <button
-        type="button"
-        id="nav-toggle"
-        class="flex h-11 w-11 cursor-pointer items-center justify-center text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink md:hidden"
-        aria-expanded="false"
-        aria-controls="mobile-nav"
-        aria-label="Меню"
-        data-label-open-uk="Меню"
-        data-label-open-en="Menu"
-        data-label-close-uk="Закрити"
-        data-label-close-en="Close"
-      >
-        <span class="sr-only" data-nav-label>Меню</span>
-        <span class="flex w-5 flex-col gap-1.5" aria-hidden="true">
-          <span class="nav-line block h-px w-full bg-current transition duration-300" data-line="1"></span>
-          <span class="nav-line block h-px w-full bg-current transition duration-300" data-line="2"></span>
-        </span>
-      </button>
+      {
+        mobileApp ? (
+          <button
+            type="button"
+            id="nav-toggle"
+            class="flex h-11 w-11 cursor-pointer items-center justify-center text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink max-md:hidden md:hidden"
+            aria-expanded="false"
+            aria-controls="mobile-nav"
+            aria-label={uk.nav.home}
+            data-label-open-uk={uk.nav.home}
+            data-label-open-en={en.nav.home}
+            data-label-close-uk="Закрити"
+            data-label-close-en="Close"
+          >
+            <span class="sr-only" data-nav-label>
+              {uk.nav.home}
+            </span>
+            <span class="flex w-5 flex-col gap-1.5" aria-hidden="true">
+              <span class="nav-line block h-px w-full bg-current transition duration-300" data-line="1"></span>
+              <span class="nav-line block h-px w-full bg-current transition duration-300" data-line="2"></span>
+            </span>
+          </button>
+        ) : (
+          <a
+            href={homePath()}
+            class="flex h-11 w-11 cursor-pointer items-center justify-center text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink md:hidden"
+            aria-label={uk.nav.home}
+          >
+            <span class="sr-only">{uk.nav.home}</span>
+            <span class="flex w-5 flex-col gap-1.5" aria-hidden="true">
+              <span class="block h-px w-full bg-current"></span>
+              <span class="block h-px w-full bg-current"></span>
+            </span>
+          </a>
+        )
+      }
     </div>
   </div>
 </header>
 
 <div
   id="mobile-nav"
-  class="fixed inset-0 z-40 hidden bg-ink md:hidden"
+  class:list={[
+    'fixed inset-0 z-40 hidden bg-ink md:hidden',
+    mobileApp && 'max-md:hidden',
+  ]}
   hidden
   role="dialog"
   aria-modal="true"
@@ -274,5 +297,31 @@ const en = t('en');
     );
 
     observer.observe(heroBrand);
+  }
+
+  if (
+    document.documentElement.getAttribute('data-gallery-page') === 'true' &&
+    window.matchMedia('(max-width: 767px)').matches
+  ) {
+    let lastY = window.scrollY;
+    let collapsed = false;
+
+    const syncNav = () => {
+      document.documentElement.toggleAttribute('data-nav-collapsed', collapsed);
+    };
+
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (document.body.classList.contains('lightbox-open')) return;
+        const y = window.scrollY;
+        if (y < 28) collapsed = false;
+        else if (y > lastY + 8) collapsed = true;
+        else if (y < lastY - 8) collapsed = false;
+        lastY = y;
+        syncNav();
+      },
+      { passive: true },
+    );
   }
 </script>

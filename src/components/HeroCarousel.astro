@@ -4,7 +4,7 @@ interface Props {
   intervalMs?: number;
 }
 
-const { images, intervalMs = 4500 } = Astro.props;
+const { images, intervalMs = 10000 } = Astro.props;
 ---
 
 {
@@ -71,8 +71,8 @@ const { images, intervalMs = 4500 } = Astro.props;
   }
 
   .hero-carousel__img {
-    transform: scale(1.04);
-    transition: transform 6.5s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: scale(1.16);
+    transition: transform 22s cubic-bezier(0.22, 0.61, 0.36, 1);
   }
 
   .hero-carousel__slide[data-active='true'] .hero-carousel__img {
@@ -102,7 +102,7 @@ const { images, intervalMs = 4500 } = Astro.props;
     const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-hero-dot]'));
     if (slides.length < 2) return;
 
-    const intervalMs = Number(root.dataset.interval) || 4500;
+    const intervalMs = Number(root.dataset.interval) || 10000;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let index = slides.findIndex((slide) => slide.dataset.active === 'true');
     if (index < 0) index = 0;

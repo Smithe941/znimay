@@ -9,20 +9,20 @@ const en = t('en');
 
 <section
   id="services"
-  class="chapter chapter--ink snap-section flex h-[100svh] h-[100dvh] flex-col overflow-hidden px-4 pt-[max(4rem,calc(env(safe-area-inset-top)+3.25rem))] pb-[max(1rem,env(safe-area-inset-bottom))] text-blush-soft sm:px-6 sm:pt-16 md:px-8 md:pt-[4.5rem]"
+  class="chapter chapter--ink snap-section flex flex-col px-4 pt-[max(5.25rem,calc(env(safe-area-inset-top)+4.5rem))] pb-[max(1rem,env(safe-area-inset-bottom))] text-blush-soft sm:px-6 sm:pt-20 md:h-[100svh] md:h-[100dvh] md:overflow-hidden md:px-8 md:pt-24"
 >
   <div class="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col">
     <div class="shrink-0 max-w-xl">
-      <h2 class="font-display text-[2.35rem] leading-none text-blush sm:text-4xl md:text-5xl">
+      <h2 class="hidden font-display text-[2.35rem] leading-none text-blush sm:text-4xl md:block md:text-5xl">
         <I18nText uk={uk.services.title} en={en.services.title} />
       </h2>
-      <p class="mt-2 text-[0.95rem] leading-relaxed text-blush-soft/75 sm:mt-3 sm:text-base">
+      <p class="mt-2 text-[0.95rem] leading-relaxed text-blush-soft/75 sm:mt-3 sm:text-base max-md:mt-0">
         <I18nText uk={uk.services.subtitle} en={en.services.subtitle} />
       </p>
     </div>
 
     <div
-      class="mt-6 min-h-0 flex-1 overflow-y-auto overscroll-y-auto sm:mt-8"
+      class="mt-6 min-h-0 md:flex-1 md:overflow-y-auto md:overscroll-y-auto sm:mt-8"
       data-services-scroll
     >
       <div class="space-y-12 pb-2 sm:space-y-14 md:space-y-16">

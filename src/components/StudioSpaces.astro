@@ -21,6 +21,7 @@ const locationSlides =
         .map((image, index) => ({
           id: image.publicId,
           src: imageUrl(image.publicId, 'location'),
+          lightboxSrc: imageUrl(image.publicId, 'lightbox'),
           alt: image.alt,
           label: null as { uk: string; en: string } | null,
           blurb: null as { uk: string; en: string } | null,
@@ -29,6 +30,7 @@ const locationSlides =
     : rooms.map((room, index) => ({
         id: room.id,
         src: room.previewUrl,
+        lightboxSrc: room.previewUrl,
         alt: room.label.uk,
         label: room.label,
         blurb: room.blurb,
@@ -97,68 +99,74 @@ const advantages = uk.studio.advantages.map((text, index) => ({
 
 <section
   id="studio"
-  class="chapter chapter--surface snap-section flex h-[100svh] h-[100dvh] flex-col overflow-hidden px-4 pt-[max(4rem,calc(env(safe-area-inset-top)+3.25rem))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-16 md:px-8 md:pt-[4.5rem]"
+  data-tab="studio"
+  class="chapter chapter--surface snap-section flex flex-col px-4 pt-[max(5.25rem,calc(env(safe-area-inset-top)+4.5rem))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-20 md:h-[100dvh] md:max-h-[100dvh] md:overflow-hidden md:px-8 md:pt-24"
   data-studio-spaces
   data-tour-config={JSON.stringify(tourConfig)}
 >
   <div class="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col">
     <div class="shrink-0">
-      <div class="flex items-end justify-between gap-3 md:flex-col md:items-stretch md:gap-6">
+      <div class="flex items-center justify-between gap-3">
         <h2 class="min-w-0 font-display text-[2.35rem] leading-none sm:text-4xl md:text-5xl">
           <I18nText uk={uk.studio.title} en={en.studio.title} />
         </h2>
-
-        <div
-          class="studio-main-nav flex shrink-0 gap-px overflow-hidden border border-ink/20 bg-ink/10 md:w-fit"
+        <button
+          type="button"
+          class="studio-tour-cta cursor-pointer shrink-0 px-3.5 py-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-4 sm:py-2.5"
+          data-tour-open
+          aria-haspopup="dialog"
+          aria-controls="studio-tour-modal"
         >
-          <div
-            class="flex gap-px"
-            role="tablist"
-            aria-label={uk.studio.title}
-            data-studio-main-tabs
-          >
-            {
-              mainTabs.map((tab, index) => (
-                <button
-                  type="button"
-                  role="tab"
-                  id={`studio-main-${tab.id}`}
-                  class="studio-main-tab cursor-pointer shrink-0 bg-surface px-3 py-2 text-[0.7rem] tracking-[0.14em] uppercase text-muted transition-colors hover:text-ink focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-4 sm:py-2.5 sm:text-xs sm:tracking-[0.16em]"
-                  aria-selected={index === 0 ? 'true' : 'false'}
-                  aria-controls={`studio-panel-${tab.id}`}
-                  data-studio-main-tab={tab.id}
-                  data-active={index === 0 ? 'true' : 'false'}
-                  tabindex={index === 0 ? 0 : -1}
-                >
-                  <I18nText uk={tab.uk} en={tab.en} />
-                </button>
-              ))
-            }
-          </div>
-          <button
-            type="button"
-            class="studio-main-tab cursor-pointer shrink-0 bg-surface px-3 py-2 text-[0.7rem] tracking-[0.14em] uppercase text-muted transition-colors hover:text-ink focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-4 sm:py-2.5 sm:text-xs sm:tracking-[0.16em]"
-            data-tour-open
-            aria-haspopup="dialog"
-            aria-controls="studio-tour-modal"
-          >
+          <span class="block text-[0.7rem] tracking-[0.14em] uppercase sm:text-xs sm:tracking-[0.16em]">
             <I18nText uk={uk.studio.tabTour} en={en.studio.tabTour} />
-          </button>
-        </div>
+          </span>
+          <span class="mt-0.5 block text-[0.62rem] leading-none tracking-wide text-ink/70 normal-case">
+            <I18nText uk={uk.studio.tabTourHint} en={en.studio.tabTourHint} />
+          </span>
+        </button>
       </div>
 
       <p class="mt-2 max-w-xl text-[0.95rem] leading-snug text-muted sm:mt-3 sm:text-base sm:leading-relaxed">
         <I18nText uk={uk.studio.subtitle} en={en.studio.subtitle} />
       </p>
+
+      <div
+        class="studio-main-nav mt-5 flex gap-5 border-b border-ink/10 sm:mt-6 sm:gap-7"
+        role="tablist"
+        aria-label={uk.studio.title}
+        data-studio-main-tabs
+      >
+        {
+          mainTabs.map((tab, index) => (
+            <button
+              type="button"
+              role="tab"
+              id={`studio-main-${tab.id}`}
+              class="studio-main-tab cursor-pointer border-b-2 border-transparent pb-2.5 text-[0.7rem] tracking-[0.14em] uppercase text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:pb-3 sm:text-xs sm:tracking-[0.16em]"
+              aria-selected={index === 0 ? 'true' : 'false'}
+              aria-controls={`studio-panel-${tab.id}`}
+              data-studio-main-tab={tab.id}
+              data-active={index === 0 ? 'true' : 'false'}
+              tabindex={index === 0 ? 0 : -1}
+            >
+              <I18nText uk={tab.uk} en={tab.en} />
+            </button>
+          ))
+        }
+      </div>
     </div>
 
-    <div class="mt-5 min-h-0 flex-1 overflow-y-auto overscroll-y-auto sm:mt-6" data-studio-scroll>
+    <div
+      class="min-h-0 pt-5 sm:pt-6 md:flex-1 md:overflow-y-auto md:overscroll-y-auto"
+      data-studio-scroll
+    >
       <!-- Panel: Info -->
       <div
         id="studio-panel-info"
         role="tabpanel"
         aria-labelledby="studio-main-info"
         data-studio-panel="info"
+        class="pb-4"
       >
         <ul class="grid gap-x-8 gap-y-2.5 sm:grid-cols-2 sm:gap-y-3 md:gap-x-10">
           {
@@ -192,7 +200,7 @@ const advantages = uk.studio.advantages.map((text, index) => ({
           data-locations-loop={locationLoopEnabled ? 'true' : 'false'}
         >
           <div
-            class="locations-track scrollbar-none -mx-4 flex touch-pan-x snap-x snap-mandatory gap-2.5 overflow-x-auto overscroll-x-contain scroll-smooth px-4 pb-1 sm:-mx-6 sm:gap-3 sm:px-6 md:mx-0 md:gap-3.5 md:px-0"
+            class="locations-track scrollbar-none -mx-4 flex touch-pan-x snap-x snap-mandatory items-center gap-2.5 overflow-x-auto overscroll-x-contain scroll-smooth py-5 sm:-mx-6 sm:gap-3 sm:py-6 md:mx-0 md:gap-3.5 md:py-7"
             data-locations-track
             tabindex="0"
             aria-roledescription="carousel"
@@ -201,10 +209,12 @@ const advantages = uk.studio.advantages.map((text, index) => ({
           {
             locationLoop.map((slide) => (
               <article
-                class="locations-slide relative w-[9.5rem] shrink-0 snap-center overflow-hidden bg-ink text-blush-soft sm:w-[11rem] md:w-[12.5rem]"
+                class="locations-slide relative w-[12.5rem] shrink-0 overflow-hidden bg-ink text-blush-soft sm:w-[15rem] md:w-[17rem]"
                 data-locations-slide
                 data-logical={slide.index}
                 data-copy={slide.copy}
+                data-lightbox-src={slide.lightboxSrc}
+                data-lightbox-alt={slide.alt}
                 data-active={
                   slide.copy === (locationLoopEnabled ? 1 : 0) && slide.index === 0 ? 'true' : 'false'
                 }
@@ -214,10 +224,16 @@ const advantages = uk.studio.advantages.map((text, index) => ({
                   slide.copy === (locationLoopEnabled ? 1 : 0) && slide.index === 0 ? 'false' : 'true'
                 }
               >
-                <div class="relative aspect-[3/4]">
+                <button
+                  type="button"
+                  class="locations-slide__open relative block aspect-[3/4] w-full cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  data-locations-open
+                  data-logical={slide.index}
+                  aria-label={slide.alt}
+                >
                   <img
                     src={slide.src}
-                    alt={slide.alt}
+                    alt=""
                     class="absolute inset-0 h-full w-full object-cover"
                     loading={
                       slide.copy === (locationLoopEnabled ? 1 : 0) && slide.index === 0
@@ -226,28 +242,29 @@ const advantages = uk.studio.advantages.map((text, index) => ({
                     }
                     draggable="false"
                   />
-                  <div class="absolute inset-x-0 bottom-0 p-2.5 sm:p-3">
-                    <p class="text-[0.55rem] tracking-[0.14em] uppercase text-blush/80 drop-shadow-[0_1px_2px_rgb(0_0_0_/_55%)]">
-                      {slide.index + 1} / {locationSlides.length}
-                    </p>
-                    {slide.label && (
-                      <h3 class="mt-1 font-display text-base leading-none tracking-wide text-blush drop-shadow-[0_1px_2px_rgb(0_0_0_/_55%)] sm:text-lg">
-                        <I18nText uk={slide.label.uk} en={slide.label.en} />
-                      </h3>
-                    )}
-                    {slide.blurb && (
-                      <p class="mt-1 text-[0.7rem] leading-snug text-blush-soft/90 drop-shadow-[0_1px_2px_rgb(0_0_0_/_55%)]">
-                        <I18nText uk={slide.blurb.uk} en={slide.blurb.en} />
-                      </p>
-                    )}
-                  </div>
-                </div>
+                  {
+                    (slide.label || slide.blurb) && (
+                      <div class="pointer-events-none absolute inset-x-0 bottom-0 p-2.5 sm:p-3">
+                        {slide.label && (
+                          <h3 class="font-display text-base leading-none tracking-wide text-blush drop-shadow-[0_1px_2px_rgb(0_0_0_/_55%)] sm:text-lg">
+                            <I18nText uk={slide.label.uk} en={slide.label.en} />
+                          </h3>
+                        )}
+                        {slide.blurb && (
+                          <p class="mt-1 text-[0.7rem] leading-snug text-blush-soft/90 drop-shadow-[0_1px_2px_rgb(0_0_0_/_55%)]">
+                            <I18nText uk={slide.blurb.uk} en={slide.blurb.en} />
+                          </p>
+                        )}
+                      </div>
+                    )
+                  }
+                </button>
               </article>
             ))
           }
         </div>
 
-        <div class="mt-4 flex items-center justify-end gap-2 sm:mt-5">
+        <div class="mt-4 hidden items-center justify-end gap-2 sm:mt-5 md:flex">
           <button
             type="button"
             class="flex size-11 cursor-pointer items-center justify-center border border-ink/20 text-ink transition hover:border-ink hover:bg-ink hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:opacity-80"
@@ -285,6 +302,71 @@ const advantages = uk.studio.advantages.map((text, index) => ({
       </div>
     </div>
   </div>
+
+  <dialog
+    class="locations-lightbox m-0 h-full max-h-none w-full max-w-none border-0 bg-ink/95 p-0 text-surface backdrop:bg-transparent"
+    data-locations-lightbox
+  >
+    <div
+      class="relative flex h-full w-full cursor-pointer items-center justify-center p-3 sm:p-6"
+      data-locations-lightbox-stage
+    >
+      <button
+        type="button"
+        class="absolute top-3 right-3 z-20 flex size-11 cursor-pointer items-center justify-center border border-blush/35 text-blush transition hover:border-blush hover:bg-blush/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 sm:top-5 sm:right-5"
+        data-locations-lightbox-close
+        aria-label={uk.portfolio.lightboxClose}
+      >
+        <svg class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="absolute top-1/2 left-2 z-20 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center border border-blush/35 text-blush transition hover:border-blush hover:bg-blush/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 sm:left-4"
+        data-locations-lightbox-prev
+        aria-label={uk.portfolio.lightboxPrev}
+      >
+        <svg class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M10 3 5 8l5 5"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="absolute top-1/2 right-2 z-20 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center border border-blush/35 text-blush transition hover:border-blush hover:bg-blush/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 sm:right-4"
+        data-locations-lightbox-next
+        aria-label={uk.portfolio.lightboxNext}
+      >
+        <svg class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M6 3l5 5-5 5"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <img
+        src=""
+        alt=""
+        class="max-h-[85dvh] max-w-[min(100%,calc(100%-5.5rem))] object-contain sm:max-w-[min(100%,calc(100%-8rem))]"
+        data-locations-lightbox-img
+        draggable="false"
+      />
+    </div>
+  </dialog>
 
   <!-- 3D Tour modal -->
   <div
@@ -375,25 +457,45 @@ const advantages = uk.studio.advantages.map((text, index) => ({
 
 <style>
   .studio-main-tab[data-active='true'] {
-    background: var(--color-ink);
-    color: var(--color-blush);
+    border-bottom-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  .studio-tour-cta {
+    background: var(--color-blush);
+    color: var(--color-ink);
+  }
+
+  .studio-tour-cta:hover,
+  .studio-tour-cta:active {
+    background: var(--color-blush-soft);
   }
 
   .studio-tab-link[data-active='true'] {
     color: var(--color-ink);
   }
 
+  .locations-track {
+    position: relative;
+    padding-inline: var(--loc-pad, 1rem);
+    scroll-padding-inline: var(--loc-pad, 1rem);
+  }
+
   .locations-slide {
-    opacity: 0.78;
-    transform: scale(0.97);
+    /* Y = none so slides are not page snap targets; X = center for the carousel */
+    scroll-snap-align: none center;
+    opacity: 0.55;
+    transform: scale(0.82);
+    transform-origin: center center;
     transition:
-      opacity 0.18s ease-out,
-      transform 0.18s ease-out;
+      opacity 0.22s ease-out,
+      transform 0.22s ease-out;
   }
 
   .locations-slide[data-active='true'] {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1.08);
+    z-index: 1;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -401,6 +503,10 @@ const advantages = uk.studio.advantages.map((text, index) => ({
       transition: none;
       transform: none;
       opacity: 1;
+    }
+
+    .locations-slide[data-active='true'] {
+      transform: none;
     }
   }
 
@@ -1032,9 +1138,21 @@ const advantages = uk.studio.advantages.map((text, index) => ({
     let scrollRaf = 0;
     let settleTick = 0;
 
+    function syncTrackPad() {
+      if (!track || slides.length === 0) return;
+      const slideW = slides[0].offsetWidth;
+      if (track.clientWidth < 8 || slideW < 8) return;
+      const pad = Math.max(0, (track.clientWidth - slideW) / 2);
+      track.style.setProperty('--loc-pad', `${pad}px`);
+    }
+
     function centerLeft(slide: HTMLElement) {
       if (!track) return 0;
-      return slide.offsetLeft - (track.clientWidth - slide.clientWidth) / 2;
+      const slideRect = slide.getBoundingClientRect();
+      const trackRect = track.getBoundingClientRect();
+      const slideMid =
+        slideRect.left - trackRect.left + track.scrollLeft + slideRect.width / 2;
+      return slideMid - track.clientWidth / 2;
     }
 
     function findDomIndex(logical: number, preferredCopy = 1) {
@@ -1160,8 +1278,15 @@ const advantages = uk.studio.advantages.map((text, index) => ({
       const panel = root.querySelector<HTMLElement>('[data-studio-panel="locations"]');
       if (panel?.hidden || panel?.classList.contains('hidden')) return;
 
+      syncTrackPad();
+
       const start = loop ? findDomIndex(0, 1) : 0;
       if (start < 0) return;
+      const startSlide = slides[start];
+      if (!startSlide || track.clientWidth < 8 || startSlide.clientWidth < 8) {
+        requestAnimationFrame(() => ensureReady(force));
+        return;
+      }
 
       jumping = true;
       const prevBehavior = track.style.scrollBehavior;
@@ -1170,6 +1295,21 @@ const advantages = uk.studio.advantages.map((text, index) => ({
       track.style.scrollBehavior = prevBehavior;
       jumping = false;
       ready = true;
+    }
+
+    function recenterActive(behavior: ScrollBehavior = 'auto') {
+      if (!track) return;
+      const slide = slides[activeDomIndex];
+      if (!slide) return;
+      syncTrackPad();
+      jumping = true;
+      const prevBehavior = track.style.scrollBehavior;
+      track.style.scrollBehavior = behavior === 'auto' ? 'auto' : prevBehavior;
+      scrollToSlide(slide, behavior);
+      track.style.scrollBehavior = prevBehavior;
+      requestAnimationFrame(() => {
+        jumping = false;
+      });
     }
 
     prevBtn?.addEventListener('click', (event) => {
@@ -1208,11 +1348,118 @@ const advantages = uk.studio.advantages.map((text, index) => ({
         }
       });
 
+      const bootCarousel = () => {
+        syncTrackPad();
+        ensureReady(true);
+        recenterActive('auto');
+      };
+
       window.addEventListener('znimay:locations-open', () => {
         carousel?.classList.add('is-visible');
         requestAnimationFrame(() => {
-          requestAnimationFrame(() => ensureReady(true));
+          requestAnimationFrame(bootCarousel);
         });
+        window.setTimeout(bootCarousel, 80);
+      });
+
+      window.addEventListener('resize', () => {
+        const panel = root.querySelector<HTMLElement>('[data-studio-panel="locations"]');
+        if (panel?.hidden || panel?.classList.contains('hidden')) return;
+        syncTrackPad();
+        if (!ready) {
+          ensureReady(true);
+          return;
+        }
+        recenterActive('auto');
+      });
+
+      // Lightbox for location stills
+      const lightbox = root.querySelector<HTMLDialogElement>('[data-locations-lightbox]');
+      const lightboxImg = lightbox?.querySelector<HTMLImageElement>('[data-locations-lightbox-img]');
+      const lightboxStage = lightbox?.querySelector<HTMLElement>('[data-locations-lightbox-stage]');
+      const lightboxItems: { src: string; alt: string }[] = [];
+      for (let i = 0; i < count; i++) {
+        const preferred =
+          slides.find(
+            (el) =>
+              Number(el.dataset.logical) === i && Number(el.dataset.copy ?? 0) === (loop ? 1 : 0),
+          ) ?? slides.find((el) => Number(el.dataset.logical) === i);
+        if (!preferred) continue;
+        const src = preferred.getAttribute('data-lightbox-src') || '';
+        if (!src) continue;
+        lightboxItems.push({
+          src,
+          alt: preferred.getAttribute('data-lightbox-alt') || '',
+        });
+      }
+      let lightboxIndex = 0;
+      let pointerStartX = 0;
+      let pointerMoved = false;
+
+      function showLightbox(index: number) {
+        if (!lightbox || !lightboxImg || lightboxItems.length === 0) return;
+        lightboxIndex = ((index % lightboxItems.length) + lightboxItems.length) % lightboxItems.length;
+        const item = lightboxItems[lightboxIndex];
+        lightboxImg.src = item.src;
+        lightboxImg.alt = item.alt;
+        if (!lightbox.open) {
+          lightbox.showModal();
+          document.body.classList.add('lightbox-open');
+        }
+      }
+
+      function closeLightbox() {
+        if (!lightbox?.open) return;
+        lightbox.close();
+        document.body.classList.remove('lightbox-open');
+      }
+
+      root.querySelectorAll<HTMLButtonElement>('[data-locations-open]').forEach((btn) => {
+        btn.addEventListener('pointerdown', (event) => {
+          pointerStartX = event.clientX;
+          pointerMoved = false;
+        });
+        btn.addEventListener('pointermove', (event) => {
+          if (Math.abs(event.clientX - pointerStartX) > 10) pointerMoved = true;
+        });
+        btn.addEventListener('click', (event) => {
+          if (pointerMoved) {
+            event.preventDefault();
+            return;
+          }
+          const logical = Number(btn.dataset.logical);
+          if (Number.isNaN(logical)) return;
+          showLightbox(logical);
+        });
+      });
+
+      lightbox?.querySelector('[data-locations-lightbox-close]')?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        closeLightbox();
+      });
+      lightbox?.querySelector('[data-locations-lightbox-prev]')?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        showLightbox(lightboxIndex - 1);
+      });
+      lightbox?.querySelector('[data-locations-lightbox-next]')?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        showLightbox(lightboxIndex + 1);
+      });
+      lightboxStage?.addEventListener('click', (event) => {
+        if (event.target === lightboxStage || event.target === lightboxImg) closeLightbox();
+      });
+      lightbox?.addEventListener('cancel', () => {
+        document.body.classList.remove('lightbox-open');
+      });
+      window.addEventListener('keydown', (event) => {
+        if (!lightbox?.open) return;
+        if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+          showLightbox(lightboxIndex - 1);
+        } else if (event.key === 'ArrowRight') {
+          event.preventDefault();
+          showLightbox(lightboxIndex + 1);
+        }
       });
     }
   }

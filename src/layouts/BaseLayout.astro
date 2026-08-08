@@ -16,6 +16,10 @@ interface Props {
   /** When true, emit homepage LocalBusiness JSON-LD */
   structuredData?: boolean;
   swapLogoAfterHero?: boolean;
+  /** Home page: enable mobile app-shell (tabs) without affecting desktop */
+  mobileApp?: boolean;
+  /** Photographer gallery: hide top nav on scroll, keep album tabs */
+  galleryPage?: boolean;
 }
 
 const {
@@ -25,6 +29,8 @@ const {
   ogImage,
   structuredData = false,
   swapLogoAfterHero = false,
+  mobileApp = false,
+  galleryPage = false,
 } = Astro.props;
 
 const copyUk = t('uk');
@@ -112,9 +118,32 @@ const jsonLd = structuredData
 ---
 
 <!doctype html>
-<html lang={lang} data-lang={lang}>
+<html
+  lang={lang}
+  data-lang={lang}
+  data-mobile-app={mobileApp ? 'true' : undefined}
+  data-gallery-page={galleryPage ? 'true' : undefined}
+>
   <head>
     <meta charset="UTF-8" />
+    {mobileApp && (
+      <script is:inline>
+        (function () {
+          try {
+            if (window.matchMedia('(max-width: 767px)').matches) {
+              document.documentElement.setAttribute('data-mobile-app-active', 'true');
+              var hash = location.hash || '';
+              var onMenu =
+                !hash ||
+                hash === '#' ||
+                hash === '#home' ||
+                hash === '#hero';
+              document.documentElement.setAttribute('data-menu-home', onMenu ? 'true' : 'false');
+            }
+          } catch (e) {}
+        })();
+      </script>
+    )}
     <script is:inline>
       (function () {
         // Avoid mid-page landings: browser scroll restore + mandatory snap fight on load
@@ -162,7 +191,7 @@ const jsonLd = structuredData
         display: none !important;
       }
     </style>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta
       name="description"
       content={pageDescriptionUk}
@@ -233,12 +262,12 @@ const jsonLd = structuredData
     <title data-title-uk={pageTitleUk} data-title-en={pageTitleEn}>{pageTitleUk}</title>
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
   </head>
-  <body class="min-h-screen flex flex-col">
-    <Header swapLogoAfterHero={swapLogoAfterHero} />
+  <body class:list={['min-h-screen flex flex-col', mobileApp && 'has-mobile-app']}>
+    <Header swapLogoAfterHero={swapLogoAfterHero} mobileApp={mobileApp} />
     <main class="flex-1">
       <slot />
     </main>
-    <Footer />
+    <Footer hideOnMobileApp={mobileApp} />
     <script is:inline define:vars={{ pageTitleUk, pageTitleEn, pageDescriptionUk, pageDescriptionEn }}>
       (function () {
         var lang = document.documentElement.getAttribute('data-lang') || 'uk';
@@ -272,63 +301,8 @@ const jsonLd = structuredData
       document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
     </script>
     <script>
-      // Soft settle to nearest chapter after scroll stops (pairs with proximity snap)
-      (function initSmoothSnap() {
-        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (reduce) return;
-
-        const sections = Array.from(
-          document.querySelectorAll<HTMLElement>('.page-canvas > .chapter, .page-canvas > .snap-section'),
-        );
-        if (sections.length < 2) return;
-
-        let settleTimer = 0;
-        let animating = false;
-
-        function nearestTop() {
-          const y = window.scrollY;
-          let best: HTMLElement | null = null;
-          let bestDist = Infinity;
-          for (const el of sections) {
-            const top = el.getBoundingClientRect().top + window.scrollY;
-            const dist = Math.abs(top - y);
-            if (dist < bestDist) {
-              bestDist = dist;
-              best = el;
-            }
-          }
-          return { el: best, dist: bestDist };
-        }
-
-        function settle() {
-          if (animating) return;
-          if (document.body.classList.contains('nav-open')) return;
-          if (document.body.classList.contains('lightbox-open')) return;
-          if (!document.documentElement.classList.contains('is-snap-ready')) return;
-
-          const { el, dist } = nearestTop();
-          if (!el) return;
-          // Only gently finish the snap — ignore if far mid-section or already aligned
-          if (dist < 6 || dist > window.innerHeight * 0.42) return;
-
-          const top = el.getBoundingClientRect().top + window.scrollY;
-          animating = true;
-          window.scrollTo({ top, behavior: 'smooth' });
-          window.setTimeout(() => {
-            animating = false;
-          }, 450);
-        }
-
-        window.addEventListener(
-          'scroll',
-          () => {
-            if (animating) return;
-            window.clearTimeout(settleTimer);
-            settleTimer = window.setTimeout(settle, 90);
-          },
-          { passive: true },
-        );
-      })();
+      import { initMobileTabs } from '../lib/mobile-tabs';
+      initMobileTabs();
     </script>
   </body>
 </html>
