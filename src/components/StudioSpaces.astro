@@ -1,0 +1,1792 @@
+---
+import { t } from '../i18n/ui';
+import { tourNodes, tourRooms, panoramaHqPath } from '../data/spaces';
+import { fetchLocationImages, imageUrl } from '../lib/cloudinary';
+import I18nText from './I18nText.astro';
+
+const uk = t('uk');
+const en = t('en');
+const base = import.meta.env.BASE_URL;
+
+const rooms = tourRooms.map((room) => ({
+  ...room,
+  previewUrl: `${base}media/${room.preview}`,
+}));
+
+const cloudLocations = await fetchLocationImages();
+const locationSlides =
+  cloudLocations.length > 0
+    ? cloudLocations
+        .filter((image) => image.resourceType === 'image')
+        .map((image, index) => ({
+          id: image.publicId,
+          src: imageUrl(image.publicId, 'location'),
+          lightboxSrc: imageUrl(image.publicId, 'lightbox'),
+          alt: image.alt,
+          label: null as { uk: string; en: string } | null,
+          blurb: null as { uk: string; en: string } | null,
+          index,
+        }))
+    : rooms.map((room, index) => ({
+        id: room.id,
+        src: room.previewUrl,
+        lightboxSrc: room.previewUrl,
+        alt: room.label.uk,
+        label: room.label,
+        blurb: room.blurb,
+        index,
+      }));
+
+const locationLoop =
+  locationSlides.length > 1
+    ? [0, 1, 2].flatMap((copy) =>
+        locationSlides.map((slide) => ({
+          ...slide,
+          copy,
+          key: `${copy}-${slide.id}`,
+        })),
+      )
+    : locationSlides.map((slide) => ({
+        ...slide,
+        copy: 0,
+        key: `0-${slide.id}`,
+      }));
+const locationLoopEnabled = locationSlides.length > 1;
+const nodesPayload = tourNodes.map((node) => ({
+  id: node.id,
+  room: node.room,
+  panorama: `${base}media/${node.panorama}`,
+  panoramaHq: `${base}media/${panoramaHqPath(node.panorama)}`,
+  name: node.name,
+  view: node.view,
+  sphereCorrection: node.sphereCorrection,
+  forwardLinks: node.links
+    .filter((link) => link.kind === 'forward')
+    .map((link) => ({
+      nodeId: link.nodeId,
+      name: link.name,
+      position: link.position,
+    })),
+  wallLinks: node.links
+    .filter((link) => link.kind === 'wall')
+    .map((link) => ({
+      nodeId: link.nodeId,
+      name: link.name,
+      position: link.position,
+      arrow: link.arrow ?? 'right',
+    })),
+}));
+
+const tourConfig = {
+  startNodeId: 'room_1_4' as const,
+  loadingTxt: { uk: uk.studio.panoLoading, en: en.studio.panoLoading },
+  nodes: nodesPayload,
+};
+
+const startNode =
+  nodesPayload.find((node) => node.id === tourConfig.startNodeId) ?? nodesPayload[0];
+
+const mainTabs = [
+  { id: 'info', uk: uk.studio.tabInfo, en: en.studio.tabInfo },
+  { id: 'locations', uk: uk.studio.tabLocations, en: en.studio.tabLocations },
+] as const;
+
+const advantages = uk.studio.advantages.map((text, index) => ({
+  uk: text,
+  en: en.studio.advantages[index],
+}));
+---
+
+<section
+  id="studio"
+  data-tab="studio"
+  class="chapter chapter--surface snap-section flex flex-col px-4 pt-[max(5.25rem,calc(env(safe-area-inset-top)+4.5rem))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-20 md:h-[100dvh] md:max-h-[100dvh] md:overflow-hidden md:px-8 md:pt-24"
+  data-studio-spaces
+  data-tour-config={JSON.stringify(tourConfig)}
+>
+  <div class="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col">
+    <div class="shrink-0">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="min-w-0 font-display text-[2.35rem] leading-none sm:text-4xl md:text-5xl">
+          <I18nText uk={uk.studio.title} en={en.studio.title} />
+        </h2>
+        <button
+          type="button"
+          class="studio-tour-cta cursor-pointer shrink-0 px-3.5 py-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-4 sm:py-2.5"
+          data-tour-open
+          aria-haspopup="dialog"
+          aria-controls="studio-tour-modal"
+        >
+          <span class="block text-[0.7rem] tracking-[0.14em] uppercase sm:text-xs sm:tracking-[0.16em]">
+            <I18nText uk={uk.studio.tabTour} en={en.studio.tabTour} />
+          </span>
+          <span class="mt-0.5 block text-[0.62rem] leading-none tracking-wide text-ink/70 normal-case">
+            <I18nText uk={uk.studio.tabTourHint} en={en.studio.tabTourHint} />
+          </span>
+        </button>
+      </div>
+
+      <p class="mt-2 max-w-xl text-[0.95rem] leading-snug text-muted sm:mt-3 sm:text-base sm:leading-relaxed">
+        <I18nText uk={uk.studio.subtitle} en={en.studio.subtitle} />
+      </p>
+
+      <div
+        class="studio-main-nav mt-5 flex gap-5 border-b border-ink/10 sm:mt-6 sm:gap-7"
+        role="tablist"
+        aria-label={uk.studio.title}
+        data-studio-main-tabs
+      >
+        {
+          mainTabs.map((tab, index) => (
+            <button
+              type="button"
+              role="tab"
+              id={`studio-main-${tab.id}`}
+              class="studio-main-tab cursor-pointer border-b-2 border-transparent pb-2.5 text-[0.7rem] tracking-[0.14em] uppercase text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:pb-3 sm:text-xs sm:tracking-[0.16em]"
+              aria-selected={index === 0 ? 'true' : 'false'}
+              aria-controls={`studio-panel-${tab.id}`}
+              data-studio-main-tab={tab.id}
+              data-active={index === 0 ? 'true' : 'false'}
+              tabindex={index === 0 ? 0 : -1}
+            >
+              <I18nText uk={tab.uk} en={tab.en} />
+            </button>
+          ))
+        }
+      </div>
+    </div>
+
+    <div
+      class="min-h-0 pt-5 sm:pt-6 md:flex-1 md:overflow-y-auto md:overscroll-y-auto"
+      data-studio-scroll
+    >
+      <!-- Panel: Info -->
+      <div
+        id="studio-panel-info"
+        role="tabpanel"
+        aria-labelledby="studio-main-info"
+        data-studio-panel="info"
+        class="pb-4"
+      >
+        <ul class="grid gap-x-8 gap-y-2.5 sm:grid-cols-2 sm:gap-y-3 md:gap-x-10">
+          {
+            advantages.map((item) => (
+              <li class="flex gap-2.5 text-[0.875rem] leading-snug text-ink/80 sm:text-[0.9rem] sm:leading-snug">
+                <span
+                  class="mt-[0.45em] h-1 w-1 shrink-0 rounded-full bg-blush"
+                  aria-hidden="true"
+                />
+                <span>
+                  <I18nText uk={item.uk} en={item.en} />
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <!-- Panel: Locations -->
+      <div
+        id="studio-panel-locations"
+        role="tabpanel"
+        aria-labelledby="studio-main-locations"
+        data-studio-panel="locations"
+        class="hidden"
+        hidden
+      >
+        <div
+          data-locations-carousel
+          data-locations-count={locationSlides.length}
+          data-locations-loop={locationLoopEnabled ? 'true' : 'false'}
+        >
+          <div
+            class="locations-track scrollbar-none -mx-4 flex touch-pan-x snap-x snap-mandatory items-center gap-2.5 overflow-x-auto overscroll-x-contain scroll-smooth py-5 sm:-mx-6 sm:gap-3 sm:py-6 md:mx-0 md:gap-3.5 md:py-7"
+            data-locations-track
+            tabindex="0"
+            aria-roledescription="carousel"
+            aria-label={uk.studio.tabLocations}
+          >
+          {
+            locationLoop.map((slide) => (
+              <article
+                class="locations-slide relative w-[12.5rem] shrink-0 overflow-hidden bg-ink text-blush-soft sm:w-[15rem] md:w-[17rem]"
+                data-locations-slide
+                data-logical={slide.index}
+                data-copy={slide.copy}
+                data-lightbox-src={slide.lightboxSrc}
+                data-lightbox-alt={slide.alt}
+                data-active={
+                  slide.copy === (locationLoopEnabled ? 1 : 0) && slide.index === 0 ? 'true' : 'false'
+                }
+                aria-roledescription="slide"
+                aria-label={`${slide.index + 1} / ${locationSlides.length}`}
+                aria-hidden={
+                  slide.copy === (locationLoopEnabled ? 1 : 0) && slide.index === 0 ? 'false' : 'true'
+                }
+              >
+                <button
+                  type="button"
+                  class="locations-slide__open relative block aspect-[3/4] w-full cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  data-locations-open
+                  data-logical={slide.index}
+                  aria-label={slide.alt}
+                >
+                  <img
+                    src={slide.src}
+                    alt=""
+                    class="absolute inset-0 h-full w-full object-cover"
+                    loading={
+                      slide.copy === (locationLoopEnabled ? 1 : 0) && slide.index === 0
+                        ? 'eager'
+                        : 'lazy'
+                    }
+                    draggable="false"
+                  />
+                  {
+                    (slide.label || slide.blurb) && (
+                      <div class="pointer-events-none absolute inset-x-0 bottom-0 p-2.5 sm:p-3">
+                        {slide.label && (
+                          <h3 class="font-display text-base leading-none tracking-wide text-blush drop-shadow-[0_1px_2px_rgb(0_0_0_/_55%)] sm:text-lg">
+                            <I18nText uk={slide.label.uk} en={slide.label.en} />
+                          </h3>
+                        )}
+                        {slide.blurb && (
+                          <p class="mt-1 text-[0.7rem] leading-snug text-blush-soft/90 drop-shadow-[0_1px_2px_rgb(0_0_0_/_55%)]">
+                            <I18nText uk={slide.blurb.uk} en={slide.blurb.en} />
+                          </p>
+                        )}
+                      </div>
+                    )
+                  }
+                </button>
+              </article>
+            ))
+          }
+        </div>
+
+        <div class="mt-4 hidden items-center justify-end gap-2 sm:mt-5 md:flex">
+          <button
+            type="button"
+            class="flex size-11 cursor-pointer items-center justify-center border border-ink/20 text-ink transition hover:border-ink hover:bg-ink hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:opacity-80"
+            data-locations-prev
+            aria-label={uk.studio.locationsPrev}
+          >
+            <svg class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="M10 3 5 8l5 5"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="flex size-11 cursor-pointer items-center justify-center border border-ink/20 text-ink transition hover:border-ink hover:bg-ink hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:opacity-80"
+            data-locations-next
+            aria-label={uk.studio.locationsNext}
+          >
+            <svg class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="M6 3l5 5-5 5"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <dialog
+    class="locations-lightbox m-0 h-full max-h-none w-full max-w-none border-0 bg-ink/95 p-0 text-surface backdrop:bg-transparent"
+    data-locations-lightbox
+  >
+    <div
+      class="relative flex h-full w-full cursor-pointer items-center justify-center p-3 sm:p-6"
+      data-locations-lightbox-stage
+    >
+      <button
+        type="button"
+        class="absolute top-3 right-3 z-20 flex size-11 cursor-pointer items-center justify-center border border-blush/35 text-blush transition hover:border-blush hover:bg-blush/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 sm:top-5 sm:right-5"
+        data-locations-lightbox-close
+        aria-label={uk.portfolio.lightboxClose}
+      >
+        <svg class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="absolute top-1/2 left-2 z-20 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center border border-blush/35 text-blush transition hover:border-blush hover:bg-blush/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 sm:left-4"
+        data-locations-lightbox-prev
+        aria-label={uk.portfolio.lightboxPrev}
+      >
+        <svg class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M10 3 5 8l5 5"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="absolute top-1/2 right-2 z-20 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center border border-blush/35 text-blush transition hover:border-blush hover:bg-blush/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 sm:right-4"
+        data-locations-lightbox-next
+        aria-label={uk.portfolio.lightboxNext}
+      >
+        <svg class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M6 3l5 5-5 5"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <img
+        src=""
+        alt=""
+        class="max-h-[85dvh] max-w-[min(100%,calc(100%-5.5rem))] object-contain sm:max-w-[min(100%,calc(100%-8rem))]"
+        data-locations-lightbox-img
+        draggable="false"
+      />
+    </div>
+  </dialog>
+
+  <!-- 3D Tour modal -->
+  <div
+    id="studio-tour-modal"
+    class="studio-tour-modal fixed inset-0 z-[100] hidden"
+    data-tour-modal
+    hidden
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="studio-tour-title"
+  >
+    <div class="absolute inset-0 bg-ink/80 backdrop-blur-sm" data-tour-close aria-hidden="true"></div>
+    <div
+      class="relative z-10 flex h-full max-h-[100dvh] flex-col bg-surface text-ink shadow-2xl sm:mx-auto sm:my-[max(1rem,4vh)] sm:h-[min(92dvh,880px)] sm:max-w-6xl sm:overflow-hidden sm:rounded-sm sm:border sm:border-ink/10"
+    >
+      <div class="flex items-center justify-between gap-3 border-b border-ink/10 px-4 py-3 sm:px-6">
+        <h3 id="studio-tour-title" class="font-display text-2xl leading-none tracking-wide sm:text-3xl">
+          <I18nText uk={uk.studio.tabTour} en={en.studio.tabTour} />
+        </h3>
+        <button
+          type="button"
+          class="flex size-11 cursor-pointer items-center justify-center border border-ink/20 text-ink transition hover:border-ink hover:bg-ink hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+          data-tour-close
+          aria-label={uk.studio.tourClose}
+        >
+          <svg class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path
+              d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <div
+        class="studio-room-nav shrink-0 border-b border-ink/10"
+        role="tablist"
+        aria-label={uk.studio.roomsNav}
+        data-room-tabs
+      >
+        <div class="scrollbar-none flex gap-1 overflow-x-auto px-4 py-3 sm:gap-2 sm:px-6">
+          {
+            rooms.map((room, index) => (
+              <button
+                type="button"
+                role="tab"
+                id={`space-tab-${room.id}`}
+                class="studio-tab-link cursor-pointer shrink-0 px-3 py-2 text-xs tracking-[0.16em] uppercase text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                aria-selected={index === 0 ? 'true' : 'false'}
+                aria-controls="studio-pano"
+                data-space-tab
+                data-room-id={room.id}
+                data-start-node={room.startNodeId}
+                data-active={index === 0 ? 'true' : 'false'}
+                tabindex={index === 0 ? 0 : -1}
+              >
+                <I18nText uk={room.label.uk} en={room.label.en} />
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      <figure class="studio-pano relative min-h-0 flex-1 overflow-hidden bg-ink">
+        <div
+          id="studio-pano"
+          class="h-full min-h-[50svh] w-full"
+          role="tabpanel"
+          aria-labelledby="space-tab-room_1"
+        >
+        </div>
+        <figcaption
+          class="pointer-events-none absolute top-3 right-14 z-20 m-0 sm:top-4 sm:right-16"
+        >
+          <p
+            class="text-right text-xs tracking-[0.14em] uppercase text-blush drop-shadow-[0_1px_8px_rgb(26_18_20_/_70%)] sm:text-sm"
+            data-pano-name
+          >
+            <I18nText uk={startNode.name.uk} en={startNode.name.en} />
+          </p>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<style>
+  .studio-main-tab[data-active='true'] {
+    border-bottom-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  .studio-tour-cta {
+    background: var(--color-blush);
+    color: var(--color-ink);
+  }
+
+  .studio-tour-cta:hover,
+  .studio-tour-cta:active {
+    background: var(--color-blush-soft);
+  }
+
+  .studio-tab-link[data-active='true'] {
+    color: var(--color-ink);
+  }
+
+  .locations-track {
+    position: relative;
+    padding-inline: var(--loc-pad, 1rem);
+    scroll-padding-inline: var(--loc-pad, 1rem);
+  }
+
+  .locations-slide {
+    /* Y = none so slides are not page snap targets; X = center for the carousel */
+    scroll-snap-align: none center;
+    opacity: 0.55;
+    transform: scale(0.82);
+    transform-origin: center center;
+    transition:
+      opacity 0.22s ease-out,
+      transform 0.22s ease-out;
+  }
+
+  .locations-slide[data-active='true'] {
+    opacity: 1;
+    transform: scale(1.08);
+    z-index: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .locations-slide {
+      transition: none;
+      transform: none;
+      opacity: 1;
+    }
+
+    .locations-slide[data-active='true'] {
+      transform: none;
+    }
+  }
+
+  .studio-tour-modal:not([hidden]) {
+    display: block;
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+</style>
+
+<style is:global>
+  .studio-pano .psv-container {
+    --psv-loader-color: #dfb4c4;
+    background: #1a1214;
+  }
+
+  .studio-pano .psv-loader-container {
+    background: #1a1214;
+  }
+
+  .studio-pano .psv-virtual-tour-arrow {
+    filter: drop-shadow(0 2px 10px rgb(37 34 35 / 50%));
+  }
+
+  /* Custom control chrome: overlay navbar, no bottom bar */
+  .studio-pano .psv-navbar.tour-psv-navbar {
+    bottom: 0 !important;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    pointer-events: none;
+    display: block;
+  }
+
+  .studio-pano .tour-psv-navbar .psv-button {
+    pointer-events: auto;
+    color: #dfb4c4;
+  }
+
+  .studio-pano .tour-psv-navbar .psv-button:hover,
+  .studio-pano .tour-psv-navbar .psv-button:focus-visible {
+    color: #e8c9d4;
+    outline: none;
+  }
+
+  .studio-pano .tour-zoom {
+    pointer-events: auto;
+    position: absolute;
+    left: 0.65rem;
+    bottom: 4.45rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    width: 2.5rem;
+    height: auto;
+    padding: 0.4rem 0.2rem;
+    border: 1px solid color-mix(in srgb, #dfb4c4 40%, transparent);
+    border-radius: 999px;
+    background: rgb(37 34 35 / 72%);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 6px 20px rgb(26 18 20 / 35%);
+    transform: scale(0.75);
+    transform-origin: left bottom;
+  }
+
+  .studio-pano .tour-zoom .psv-button {
+    position: static;
+    width: 2rem;
+    height: 2rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .studio-pano .tour-zoom .psv-button svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .studio-pano .tour-zoom .psv-zoom-range.psv-button {
+    width: 4.5rem;
+    height: 1px;
+    margin: 1.75rem 0;
+    padding: 1rem 0;
+    max-width: none;
+    transform: rotate(-90deg);
+    flex-shrink: 0;
+  }
+
+  .studio-pano .tour-zoom .psv-zoom-range-line {
+    width: 4.5rem;
+    background: color-mix(in srgb, #dfb4c4 70%, white);
+  }
+
+  .studio-pano .tour-zoom .psv-zoom-range-handle {
+    background: #dfb4c4;
+  }
+
+  /* Arrow-tip D-pad: smaller, rounder, UI chrome + visible border */
+  .studio-pano .tour-dpad {
+    --dpad-size: 3.45rem;
+    pointer-events: none;
+    position: absolute;
+    left: 0.65rem;
+    bottom: 0.65rem;
+    width: var(--dpad-size);
+    height: var(--dpad-size);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  .studio-pano .tour-dpad .psv-button {
+    pointer-events: auto;
+    position: absolute;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #dfb4c4;
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease, filter 0.15s ease;
+    /* Soft depth only — stroke matches zoom/fullscreen via ::before */
+    filter: drop-shadow(0 2px 8px rgb(26 18 20 / 35%));
+  }
+
+  .studio-pano .tour-dpad .psv-button::before,
+  .studio-pano .tour-dpad .psv-button::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    clip-path: inherit;
+  }
+
+  /* Same border token as .tour-zoom / fullscreen */
+  .studio-pano .tour-dpad .psv-button::before {
+    inset: 0;
+    z-index: 0;
+    background: color-mix(in srgb, #dfb4c4 40%, transparent);
+  }
+
+  .studio-pano .tour-dpad .psv-button::after {
+    inset: 1px;
+    z-index: 0;
+    background: rgb(37 34 35 / 72%);
+    backdrop-filter: blur(8px);
+    transition: background 0.15s ease;
+  }
+
+  .studio-pano .tour-dpad .psv-button:hover,
+  .studio-pano .tour-dpad .psv-button:focus-visible {
+    color: #e8c9d4;
+    outline: none;
+    filter: drop-shadow(0 2px 8px rgb(26 18 20 / 40%));
+  }
+
+  .studio-pano .tour-dpad .psv-button:hover::before,
+  .studio-pano .tour-dpad .psv-button:focus-visible::before {
+    background: #dfb4c4;
+  }
+
+  .studio-pano .tour-dpad .psv-button:hover::after,
+  .studio-pano .tour-dpad .psv-button:focus-visible::after {
+    background: rgb(37 34 35 / 90%);
+  }
+
+  .studio-pano .tour-dpad .psv-button svg {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 11px;
+    height: 11px;
+    flex-shrink: 0;
+  }
+
+  .studio-pano .tour-dpad [data-tour-ctrl='moveUp'] {
+    top: 0;
+    left: 17%;
+    width: 66%;
+    height: 47%;
+    align-items: flex-start;
+    padding-top: 0.2rem;
+    /* Soft outer corners, tip toward center */
+    clip-path: polygon(
+      14% 0%,
+      86% 0%,
+      100% 16%,
+      100% 22%,
+      80% 58%,
+      58% 84%,
+      50% 94%,
+      42% 84%,
+      20% 58%,
+      0% 22%,
+      0% 16%
+    );
+  }
+
+  .studio-pano .tour-dpad [data-tour-ctrl='moveDown'] {
+    bottom: 0;
+    left: 17%;
+    width: 66%;
+    height: 47%;
+    align-items: flex-end;
+    padding-bottom: 0.2rem;
+    clip-path: polygon(
+      50% 6%,
+      58% 16%,
+      80% 42%,
+      100% 78%,
+      100% 84%,
+      86% 100%,
+      14% 100%,
+      0% 84%,
+      0% 78%,
+      20% 42%,
+      42% 16%
+    );
+  }
+
+  .studio-pano .tour-dpad [data-tour-ctrl='moveLeft'] {
+    top: 17%;
+    left: 0;
+    width: 47%;
+    height: 66%;
+    justify-content: flex-start;
+    padding-left: 0.2rem;
+    clip-path: polygon(
+      0% 14%,
+      16% 0%,
+      22% 0%,
+      58% 20%,
+      84% 42%,
+      94% 50%,
+      84% 58%,
+      58% 80%,
+      22% 100%,
+      16% 100%,
+      0% 86%
+    );
+  }
+
+  .studio-pano .tour-dpad [data-tour-ctrl='moveRight'] {
+    top: 17%;
+    right: 0;
+    width: 47%;
+    height: 66%;
+    justify-content: flex-end;
+    padding-right: 0.2rem;
+    clip-path: polygon(
+      6% 50%,
+      16% 42%,
+      42% 20%,
+      78% 0%,
+      84% 0%,
+      100% 14%,
+      100% 86%,
+      84% 100%,
+      78% 100%,
+      42% 80%,
+      16% 58%
+    );
+  }
+
+  .studio-pano .tour-psv-navbar [data-tour-ctrl='fullscreen'] {
+    position: absolute;
+    top: 0.65rem;
+    right: 0.65rem;
+    width: 48px;
+    height: 48px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, #dfb4c4 40%, transparent);
+    border-radius: 999px;
+    background: rgb(37 34 35 / 72%);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 6px 20px rgb(26 18 20 / 35%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .studio-pano .tour-psv-navbar [data-tour-ctrl='fullscreen'] svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  @keyframes tour-plaque-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+      box-shadow:
+        0 6px 18px rgb(26 18 20 / 40%),
+        0 0 0 0 color-mix(in srgb, #dfb4c4 0%, transparent);
+    }
+    50% {
+      transform: scale(1.03);
+      box-shadow:
+        0 8px 22px rgb(26 18 20 / 45%),
+        0 0 0 5px color-mix(in srgb, #dfb4c4 16%, transparent);
+    }
+  }
+
+  @keyframes tour-plaque-pulse-hot {
+    0%,
+    100% {
+      transform: scale(1.04);
+      box-shadow:
+        0 8px 22px rgb(26 18 20 / 45%),
+        0 0 0 2px color-mix(in srgb, #dfb4c4 28%, transparent);
+    }
+    50% {
+      transform: scale(1.08);
+      box-shadow:
+        0 10px 26px rgb(26 18 20 / 50%),
+        0 0 0 8px color-mix(in srgb, #dfb4c4 24%, transparent);
+    }
+  }
+
+  .tour-wall-plaque {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.12rem;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0.18rem 0.45rem;
+    border: 1px solid color-mix(in srgb, #dfb4c4 70%, white);
+    border-radius: 999px;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, #dfb4c4 22%, rgb(37 34 35 / 92%)) 0%,
+      rgb(37 34 35 / 90%) 100%
+    );
+    color: #f3dde5;
+    cursor: pointer;
+    animation: tour-plaque-pulse 2.4s ease-in-out infinite;
+    transition:
+      background 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease,
+      filter 0.2s ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tour-wall-plaque {
+      animation: none;
+    }
+  }
+
+  .psv-marker:hover .tour-wall-plaque,
+  .tour-wall-plaque:hover,
+  .tour-wall-plaque:focus-visible {
+    animation: tour-plaque-pulse-hot 1.5s ease-in-out infinite;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, #dfb4c4 32%, rgb(37 34 35 / 94%)) 0%,
+      rgb(37 34 35 / 94%) 100%
+    );
+    border-color: #f3dde5;
+    color: #fff;
+    filter: brightness(1.06);
+    outline: none;
+  }
+
+  .tour-wall-plaque__label {
+    font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .tour-wall-plaque__arrow {
+    display: flex;
+    width: 0.85rem;
+    height: 0.85rem;
+    color: inherit;
+    opacity: 0.9;
+  }
+
+  .tour-wall-plaque__arrow svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .tour-wall-plaque__arrow[data-dir='up'] {
+    order: -1;
+  }
+</style>
+
+<script>
+  import { Viewer } from '@photo-sphere-viewer/core';
+  import { VirtualTourPlugin } from '@photo-sphere-viewer/virtual-tour-plugin';
+  import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
+  import '@photo-sphere-viewer/core/index.css';
+  import '@photo-sphere-viewer/virtual-tour-plugin/index.css';
+  import '@photo-sphere-viewer/markers-plugin/index.css';
+
+  type Localized = { uk: string; en: string };
+
+  type LinkPayload = {
+    nodeId: string;
+    name: Localized;
+    position: { yaw: string; pitch: string };
+    arrow?: 'up' | 'down' | 'left' | 'right';
+  };
+
+  type TourNodePayload = {
+    id: string;
+    room: string;
+    panorama: string;
+    panoramaHq: string;
+    name: Localized;
+    view: { yaw: string; pitch: string };
+    sphereCorrection?: { pan?: string; tilt?: string; roll?: string };
+    forwardLinks: LinkPayload[];
+    wallLinks: LinkPayload[];
+  };
+
+  type TourConfig = {
+    startNodeId: string;
+    loadingTxt: Localized;
+    nodes: TourNodePayload[];
+  };
+
+  function currentLang(): 'uk' | 'en' {
+    return document.documentElement.getAttribute('data-lang') === 'en' ? 'en' : 'uk';
+  }
+
+  function loc(value: Localized | string) {
+    if (typeof value === 'string') return value;
+    return value[currentLang()];
+  }
+
+  const root = document.querySelector<HTMLElement>('[data-studio-spaces]');
+  const tourModal = (() => {
+    const modal =
+      root?.querySelector<HTMLElement>('[data-tour-modal]') ??
+      document.querySelector<HTMLElement>('[data-tour-modal]');
+    // Escape page-canvas stacking context so the modal sits above the fixed header
+    if (modal && modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
+    }
+    return modal;
+  })();
+  const el = document.getElementById('studio-pano');
+  const nameEl = tourModal?.querySelector<HTMLElement>('[data-pano-name]');
+  const roomTabs = tourModal
+    ? Array.from(tourModal.querySelectorAll<HTMLButtonElement>('[data-space-tab]'))
+    : [];
+  const mainTabs = root
+    ? Array.from(root.querySelectorAll<HTMLButtonElement>('[data-studio-main-tab]'))
+    : [];
+  const panels = root
+    ? Array.from(root.querySelectorAll<HTMLElement>('[data-studio-panel]'))
+    : [];
+
+  function escapeHtml(value: string) {
+    return value
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;');
+  }
+
+  function wallPlaqueArrowSvg(dir: 'up' | 'down' | 'left' | 'right') {
+    const rot = { up: 0, right: 90, down: 180, left: 270 }[dir];
+    return `
+      <span class="tour-wall-plaque__arrow" data-dir="${dir}" aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="none" style="transform: rotate(${rot}deg)">
+          <path
+            d="M8 12.5V3.5M8 3.5 4.5 7M8 3.5 11.5 7"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </span>
+    `;
+  }
+
+  function wallPlaqueHtml(label: string, arrow: 'up' | 'down' | 'left' | 'right' = 'right') {
+    return `
+      <button type="button" class="tour-wall-plaque">
+        <span class="tour-wall-plaque__label">${escapeHtml(label)}</span>
+        ${wallPlaqueArrowSvg(arrow)}
+      </button>
+    `;
+  }
+
+  function setMainTab(tabId: string) {
+    for (const tab of mainTabs) {
+      const active = tab.dataset.studioMainTab === tabId;
+      tab.setAttribute('aria-selected', active ? 'true' : 'false');
+      tab.setAttribute('data-active', active ? 'true' : 'false');
+      tab.tabIndex = active ? 0 : -1;
+    }
+
+    for (const panel of panels) {
+      const active = panel.dataset.studioPanel === tabId;
+      panel.classList.toggle('hidden', !active);
+      panel.hidden = !active;
+    }
+
+    if (tabId === 'locations') {
+      window.dispatchEvent(new CustomEvent('znimay:locations-open'));
+    }
+  }
+
+  const tourOpenBtn = root?.querySelector<HTMLButtonElement>('[data-tour-open]');
+  const tourCloseBtns = tourModal
+    ? Array.from(tourModal.querySelectorAll<HTMLElement>('[data-tour-close]'))
+    : [];
+
+  function openTourModal() {
+    if (!tourModal) return;
+    tourModal.hidden = false;
+    tourModal.classList.remove('hidden');
+    document.body.classList.add('tour-open');
+    document.querySelector('header')?.setAttribute('aria-hidden', 'true');
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new Event('resize'));
+      window.dispatchEvent(new CustomEvent('znimay:tour-open'));
+      tourModal.querySelector<HTMLElement>('[data-tour-close]')?.focus();
+    });
+  }
+
+  function closeTourModal() {
+    if (!tourModal) return;
+    tourModal.hidden = true;
+    tourModal.classList.add('hidden');
+    document.body.classList.remove('tour-open');
+    document.querySelector('header')?.removeAttribute('aria-hidden');
+    tourOpenBtn?.focus();
+  }
+
+  tourOpenBtn?.addEventListener('click', () => openTourModal());
+  tourCloseBtns.forEach((btn) => {
+    btn.addEventListener('click', () => closeTourModal());
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && document.body.classList.contains('tour-open')) {
+      closeTourModal();
+    }
+  });
+
+  function wireTablist(
+    tabs: HTMLButtonElement[],
+    onActivate: (tab: HTMLButtonElement) => void,
+  ) {
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => onActivate(tab));
+    });
+
+    const parent = tabs[0]?.closest('[role="tablist"]');
+    parent?.addEventListener('keydown', (event) => {
+      if (!(event instanceof KeyboardEvent)) return;
+      if (!(event.target instanceof HTMLElement)) return;
+      if (!tabs.includes(event.target as HTMLButtonElement)) return;
+
+      const current = tabs.indexOf(event.target as HTMLButtonElement);
+      if (current < 0) return;
+
+      let next = current;
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (current + 1) % tabs.length;
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowUp')
+        next = (current - 1 + tabs.length) % tabs.length;
+      if (event.key === 'Home') next = 0;
+      if (event.key === 'End') next = tabs.length - 1;
+
+      if (next !== current) {
+        event.preventDefault();
+        tabs[next].focus();
+        tabs[next].click();
+      }
+    });
+  }
+
+  if (root) {
+    wireTablist(mainTabs, (tab) => {
+      const id = tab.dataset.studioMainTab;
+      if (id) setMainTab(id);
+    });
+
+    const carousel = root.querySelector<HTMLElement>('[data-locations-carousel]');
+    const track = root.querySelector<HTMLElement>('[data-locations-track]');
+    const slides = track
+      ? Array.from(track.querySelectorAll<HTMLElement>('[data-locations-slide]'))
+      : [];
+    const prevBtn = root.querySelector<HTMLButtonElement>('[data-locations-prev]');
+    const nextBtn = root.querySelector<HTMLButtonElement>('[data-locations-next]');
+    const count = Number(carousel?.dataset.locationsCount || 0) || 0;
+    const loop = carousel?.dataset.locationsLoop === 'true' && count > 1;
+    let activeLogical = 0;
+    let activeDomIndex = loop ? count : 0;
+    let jumping = false;
+    let ready = false;
+    let scrollRaf = 0;
+    let settleTick = 0;
+
+    function syncTrackPad() {
+      if (!track || slides.length === 0) return;
+      const slideW = slides[0].offsetWidth;
+      if (track.clientWidth < 8 || slideW < 8) return;
+      const pad = Math.max(0, (track.clientWidth - slideW) / 2);
+      track.style.setProperty('--loc-pad', `${pad}px`);
+    }
+
+    function centerLeft(slide: HTMLElement) {
+      if (!track) return 0;
+      const slideRect = slide.getBoundingClientRect();
+      const trackRect = track.getBoundingClientRect();
+      const slideMid =
+        slideRect.left - trackRect.left + track.scrollLeft + slideRect.width / 2;
+      return slideMid - track.clientWidth / 2;
+    }
+
+    function findDomIndex(logical: number, preferredCopy = 1) {
+      const preferred = slides.findIndex(
+        (slide) =>
+          Number(slide.dataset.logical) === logical &&
+          Number(slide.dataset.copy ?? 0) === preferredCopy,
+      );
+      if (preferred >= 0) return preferred;
+      return slides.findIndex((slide) => Number(slide.dataset.logical) === logical);
+    }
+
+    function setActiveVisual(logical: number, domIndex: number) {
+      const nextLogical = ((logical % count) + count) % count;
+      if (domIndex === activeDomIndex && nextLogical === activeLogical) return;
+      activeLogical = nextLogical;
+      activeDomIndex = domIndex;
+      slides.forEach((slide, i) => {
+        const on = i === domIndex;
+        slide.dataset.active = String(on);
+        slide.setAttribute('aria-hidden', on ? 'false' : 'true');
+      });
+    }
+
+    function scrollToSlide(slide: HTMLElement, behavior: ScrollBehavior) {
+      if (!track) return;
+      track.scrollTo({ left: Math.max(0, centerLeft(slide)), behavior });
+    }
+
+    function goToDom(domIndex: number, behavior: ScrollBehavior = 'smooth') {
+      if (domIndex < 0 || domIndex >= slides.length) return;
+      const slide = slides[domIndex];
+      if (!track || !slide) return;
+      const logical = Number(slide.dataset.logical);
+      setActiveVisual(Number.isNaN(logical) ? 0 : logical, domIndex);
+      scrollToSlide(slide, behavior);
+    }
+
+    function goToLogical(logical: number, behavior: ScrollBehavior = 'smooth') {
+      if (count < 1) return;
+      const target = ((logical % count) + count) % count;
+      const preferredCopy = loop ? 1 : 0;
+      const domIndex = findDomIndex(target, preferredCopy);
+      if (domIndex < 0) return;
+      goToDom(domIndex, behavior);
+    }
+
+    function goPrev() {
+      if (count < 1) return;
+      if (!ready) ensureReady(true);
+      if (!ready) return;
+      if (loop) {
+        // Step one DOM slide left — wraps via cloned copies
+        const next = activeDomIndex <= 0 ? slides.length - 1 : activeDomIndex - 1;
+        goToDom(next, 'smooth');
+      } else {
+        goToLogical(activeLogical <= 0 ? count - 1 : activeLogical - 1, 'smooth');
+      }
+    }
+
+    function goNext() {
+      if (count < 1) return;
+      if (!ready) ensureReady(true);
+      if (!ready) return;
+      if (loop) {
+        const next = activeDomIndex >= slides.length - 1 ? 0 : activeDomIndex + 1;
+        goToDom(next, 'smooth');
+      } else {
+        goToLogical(activeLogical >= count - 1 ? 0 : activeLogical + 1, 'smooth');
+      }
+    }
+
+    function normalizeLoop() {
+      if (!loop || !track || jumping) return;
+      const slide = slides[activeDomIndex];
+      if (!slide) return;
+      const copy = Number(slide.dataset.copy ?? 1);
+      if (copy === 1) return;
+      const logical = Number(slide.dataset.logical);
+      const middle = findDomIndex(Number.isNaN(logical) ? 0 : logical, 1);
+      const middleSlide = slides[middle];
+      if (middle < 0 || !middleSlide) return;
+
+      jumping = true;
+      const prevBehavior = track.style.scrollBehavior;
+      track.style.scrollBehavior = 'auto';
+      scrollToSlide(middleSlide, 'auto');
+      track.style.scrollBehavior = prevBehavior;
+      setActiveVisual(Number.isNaN(logical) ? 0 : logical, middle);
+      requestAnimationFrame(() => {
+        jumping = false;
+      });
+    }
+
+    function syncActiveFromScroll() {
+      if (!track || jumping || !ready) return;
+      const center = track.scrollLeft + track.clientWidth / 2;
+      let nearest = activeDomIndex;
+      let best = Infinity;
+      slides.forEach((slide, i) => {
+        const mid = slide.offsetLeft + slide.clientWidth / 2;
+        const dist = Math.abs(mid - center);
+        if (dist < best) {
+          best = dist;
+          nearest = i;
+        }
+      });
+      const slide = slides[nearest];
+      const logical = Number(slide?.dataset.logical ?? 0);
+      setActiveVisual(Number.isNaN(logical) ? 0 : logical, nearest);
+    }
+
+    function settleFromScroll() {
+      if (!track || jumping || !ready) return;
+      syncActiveFromScroll();
+      normalizeLoop();
+    }
+
+    function ensureReady(force = false) {
+      if (!track || slides.length === 0 || count < 1) return;
+      if (ready && !force) return;
+      // Panel must be visible for correct offset measurements
+      const panel = root.querySelector<HTMLElement>('[data-studio-panel="locations"]');
+      if (panel?.hidden || panel?.classList.contains('hidden')) return;
+
+      syncTrackPad();
+
+      const start = loop ? findDomIndex(0, 1) : 0;
+      if (start < 0) return;
+      const startSlide = slides[start];
+      if (!startSlide || track.clientWidth < 8 || startSlide.clientWidth < 8) {
+        requestAnimationFrame(() => ensureReady(force));
+        return;
+      }
+
+      jumping = true;
+      const prevBehavior = track.style.scrollBehavior;
+      track.style.scrollBehavior = 'auto';
+      goToDom(start, 'auto');
+      track.style.scrollBehavior = prevBehavior;
+      jumping = false;
+      ready = true;
+    }
+
+    function recenterActive(behavior: ScrollBehavior = 'auto') {
+      if (!track) return;
+      const slide = slides[activeDomIndex];
+      if (!slide) return;
+      syncTrackPad();
+      jumping = true;
+      const prevBehavior = track.style.scrollBehavior;
+      track.style.scrollBehavior = behavior === 'auto' ? 'auto' : prevBehavior;
+      scrollToSlide(slide, behavior);
+      track.style.scrollBehavior = prevBehavior;
+      requestAnimationFrame(() => {
+        jumping = false;
+      });
+    }
+
+    prevBtn?.addEventListener('click', (event) => {
+      event.preventDefault();
+      goPrev();
+    });
+    nextBtn?.addEventListener('click', (event) => {
+      event.preventDefault();
+      goNext();
+    });
+
+    if (track && slides.length > 0) {
+      track.addEventListener(
+        'scroll',
+        () => {
+          if (jumping) return;
+          if (!scrollRaf) {
+            scrollRaf = requestAnimationFrame(() => {
+              scrollRaf = 0;
+              syncActiveFromScroll();
+            });
+          }
+          window.clearTimeout(settleTick);
+          settleTick = window.setTimeout(settleFromScroll, 90);
+        },
+        { passive: true },
+      );
+
+      track.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowRight') {
+          event.preventDefault();
+          goNext();
+        } else if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+          goPrev();
+        }
+      });
+
+      const bootCarousel = () => {
+        syncTrackPad();
+        ensureReady(true);
+        recenterActive('auto');
+      };
+
+      window.addEventListener('znimay:locations-open', () => {
+        carousel?.classList.add('is-visible');
+        requestAnimationFrame(() => {
+          requestAnimationFrame(bootCarousel);
+        });
+        window.setTimeout(bootCarousel, 80);
+      });
+
+      window.addEventListener('resize', () => {
+        const panel = root.querySelector<HTMLElement>('[data-studio-panel="locations"]');
+        if (panel?.hidden || panel?.classList.contains('hidden')) return;
+        syncTrackPad();
+        if (!ready) {
+          ensureReady(true);
+          return;
+        }
+        recenterActive('auto');
+      });
+
+      // Lightbox for location stills
+      const lightbox = root.querySelector<HTMLDialogElement>('[data-locations-lightbox]');
+      const lightboxImg = lightbox?.querySelector<HTMLImageElement>('[data-locations-lightbox-img]');
+      const lightboxStage = lightbox?.querySelector<HTMLElement>('[data-locations-lightbox-stage]');
+      const lightboxItems: { src: string; alt: string }[] = [];
+      for (let i = 0; i < count; i++) {
+        const preferred =
+          slides.find(
+            (el) =>
+              Number(el.dataset.logical) === i && Number(el.dataset.copy ?? 0) === (loop ? 1 : 0),
+          ) ?? slides.find((el) => Number(el.dataset.logical) === i);
+        if (!preferred) continue;
+        const src = preferred.getAttribute('data-lightbox-src') || '';
+        if (!src) continue;
+        lightboxItems.push({
+          src,
+          alt: preferred.getAttribute('data-lightbox-alt') || '',
+        });
+      }
+      let lightboxIndex = 0;
+      let pointerStartX = 0;
+      let pointerMoved = false;
+
+      function showLightbox(index: number) {
+        if (!lightbox || !lightboxImg || lightboxItems.length === 0) return;
+        lightboxIndex = ((index % lightboxItems.length) + lightboxItems.length) % lightboxItems.length;
+        const item = lightboxItems[lightboxIndex];
+        lightboxImg.src = item.src;
+        lightboxImg.alt = item.alt;
+        if (!lightbox.open) {
+          lightbox.showModal();
+          document.body.classList.add('lightbox-open');
+        }
+      }
+
+      function closeLightbox() {
+        if (!lightbox?.open) return;
+        lightbox.close();
+        document.body.classList.remove('lightbox-open');
+      }
+
+      root.querySelectorAll<HTMLButtonElement>('[data-locations-open]').forEach((btn) => {
+        btn.addEventListener('pointerdown', (event) => {
+          pointerStartX = event.clientX;
+          pointerMoved = false;
+        });
+        btn.addEventListener('pointermove', (event) => {
+          if (Math.abs(event.clientX - pointerStartX) > 10) pointerMoved = true;
+        });
+        btn.addEventListener('click', (event) => {
+          if (pointerMoved) {
+            event.preventDefault();
+            return;
+          }
+          const logical = Number(btn.dataset.logical);
+          if (Number.isNaN(logical)) return;
+          showLightbox(logical);
+        });
+      });
+
+      lightbox?.querySelector('[data-locations-lightbox-close]')?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        closeLightbox();
+      });
+      lightbox?.querySelector('[data-locations-lightbox-prev]')?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        showLightbox(lightboxIndex - 1);
+      });
+      lightbox?.querySelector('[data-locations-lightbox-next]')?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        showLightbox(lightboxIndex + 1);
+      });
+      lightboxStage?.addEventListener('click', (event) => {
+        if (event.target === lightboxStage || event.target === lightboxImg) closeLightbox();
+      });
+      lightbox?.addEventListener('cancel', () => {
+        document.body.classList.remove('lightbox-open');
+      });
+      window.addEventListener('keydown', (event) => {
+        if (!lightbox?.open) return;
+        if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+          showLightbox(lightboxIndex - 1);
+        } else if (event.key === 'ArrowRight') {
+          event.preventDefault();
+          showLightbox(lightboxIndex + 1);
+        }
+      });
+    }
+  }
+
+  if (root && el) {
+    const config = JSON.parse(root.dataset.tourConfig || '{}') as TourConfig;
+    const nodeById = new Map(config.nodes.map((node) => [node.id, node]));
+    const startView = nodeById.get(config.startNodeId)?.view ?? { yaw: '0deg', pitch: '0deg' };
+    const minFov = 30;
+    const maxFov = 120;
+    const defaultFov = 80;
+    /** PSV zoom 0 = maxFov (out), 100 = minFov (in) */
+    const fovToZoomLvl = (fov: number) =>
+      Math.round(((maxFov - fov) / (maxFov - minFov)) * 100);
+    const defaultZoomLvl = fovToZoomLvl(defaultFov);
+
+    const tourNodesForPlugin = config.nodes.map((node) => ({
+      id: node.id,
+      name: loc(node.name),
+      panorama: node.panorama,
+      sphereCorrection: node.sphereCorrection,
+      links: node.forwardLinks.map((link) => ({
+        nodeId: link.nodeId,
+        name: loc(link.name),
+        position: link.position,
+      })),
+      markers: node.wallLinks.map((link) => ({
+        id: `wall-${node.id}-${link.nodeId}`,
+        position: link.position,
+        html: wallPlaqueHtml(loc(link.name), link.arrow ?? 'right'),
+        anchor: 'center center' as const,
+        size: { width: 132, height: 40 },
+        zIndex: 20,
+        data: { goto: link.nodeId },
+      })),
+    }));
+
+    // Assigned below; transitionOptions runs after Viewer exists.
+    let viewer!: Viewer;
+
+    viewer = new Viewer({
+      container: el,
+      loadingTxt: loc(config.loadingTxt) || '',
+      navbar: ['zoomIn', 'zoomRange', 'zoomOut', 'moveUp', 'moveLeft', 'moveDown', 'moveRight', 'fullscreen'],
+      defaultYaw: startView.yaw,
+      defaultPitch: startView.pitch,
+      defaultZoomLvl,
+      minFov,
+      maxFov,
+      mousemove: true,
+      mousewheel: true,
+      plugins: [
+        MarkersPlugin.withConfig({}),
+        VirtualTourPlugin.withConfig({
+          dataMode: 'client',
+          positionMode: 'manual',
+          renderMode: '3d',
+          startNodeId: config.startNodeId,
+          preload: true,
+          nodes: tourNodesForPlugin,
+          // Same room: keep look direction (Street View).
+          // Other room: snap to that node's default `view`.
+          transitionOptions: (toNode, fromNode) => {
+            const to = nodeById.get(toNode.id);
+            const from = fromNode ? nodeById.get(fromNode.id) : undefined;
+            const sameRoom = Boolean(from && to && from.room === to.room);
+
+            if (sameRoom) {
+              const { yaw, pitch } = viewer.getPosition();
+              return {
+                showLoader: false,
+                speed: '20rpm',
+                effect: 'fade' as const,
+                rotation: false,
+                rotateTo: { yaw, pitch },
+                zoomTo: viewer.getZoomLevel(),
+              };
+            }
+
+            const view = to?.view ?? { yaw: '0deg', pitch: '0deg' };
+            return {
+              showLoader: false,
+              speed: '20rpm',
+              effect: 'fade' as const,
+              rotation: true,
+              rotateTo: view,
+              zoomTo: defaultZoomLvl,
+            };
+          },
+          arrowStyle: {
+            className: 'znimay-tour-arrow',
+            style: {
+              color: '#dfb4c4',
+            },
+          },
+        }),
+      ],
+    });
+
+    const tour = viewer.getPlugin(VirtualTourPlugin) as VirtualTourPlugin;
+    const markers = viewer.getPlugin(MarkersPlugin) as MarkersPlugin;
+
+    const TOUR_CTRL_ORDER = [
+      'zoomIn',
+      'zoomRange',
+      'zoomOut',
+      'moveUp',
+      'moveLeft',
+      'moveDown',
+      'moveRight',
+      'fullscreen',
+    ] as const;
+
+    const layoutTourControls = () => {
+      const nav = el.querySelector<HTMLElement>('.psv-navbar');
+      if (!nav) return;
+      nav.classList.add('tour-psv-navbar');
+
+      const known = new Set<string>(TOUR_CTRL_ORDER);
+      const byId = new Map<string, HTMLElement>();
+
+      for (const btn of Array.from(nav.querySelectorAll<HTMLElement>('.psv-button'))) {
+        const tagged = btn.dataset.tourCtrl;
+        if (tagged && known.has(tagged)) byId.set(tagged, btn);
+      }
+
+      if (byId.size < TOUR_CTRL_ORDER.length) {
+        const untagged = Array.from(nav.querySelectorAll<HTMLElement>(':scope > .psv-button'));
+        untagged.forEach((btn, index) => {
+          const id = TOUR_CTRL_ORDER[index];
+          if (!id || byId.has(id)) return;
+          btn.dataset.tourCtrl = id;
+          byId.set(id, btn);
+        });
+      }
+
+      let zoomWrap = nav.querySelector<HTMLElement>('.tour-zoom');
+      if (!zoomWrap) {
+        zoomWrap = document.createElement('div');
+        zoomWrap.className = 'tour-zoom';
+        nav.appendChild(zoomWrap);
+      }
+      for (const id of ['zoomIn', 'zoomRange', 'zoomOut'] as const) {
+        const btn = byId.get(id);
+        if (btn) zoomWrap.appendChild(btn);
+      }
+
+      let dpad = nav.querySelector<HTMLElement>('.tour-dpad');
+      if (!dpad) {
+        dpad = document.createElement('div');
+        dpad.className = 'tour-dpad';
+        nav.appendChild(dpad);
+      }
+      for (const id of ['moveUp', 'moveLeft', 'moveDown', 'moveRight'] as const) {
+        const btn = byId.get(id);
+        if (btn) dpad.appendChild(btn);
+      }
+    };
+
+    layoutTourControls();
+
+    // Warm LQ for hops; HQ upgrades after each node enter.
+    viewer.addEventListener(
+      'ready',
+      () => {
+        layoutTourControls();
+        for (const node of config.nodes) {
+          void viewer.textureLoader.preloadPanorama(node.panorama).catch(() => {});
+        }
+        void upgradeToHq(config.startNodeId);
+      },
+      { once: true },
+    );
+
+    window.addEventListener('znimay:tour-open', () => {
+      window.dispatchEvent(new Event('resize'));
+      const current = tour.getCurrentNode();
+      if (current) syncMarkers(current.id);
+    });
+
+    let currentNodeId = config.startNodeId;
+    let hqUpgradeToken = 0;
+
+    const warmNeighborHq = (nodeId: string) => {
+      const node = nodeById.get(nodeId);
+      if (!node) return;
+      for (const link of [...node.forwardLinks, ...node.wallLinks]) {
+        const next = nodeById.get(link.nodeId);
+        if (next?.panoramaHq) {
+          void viewer.textureLoader.preloadPanorama(next.panoramaHq).catch(() => {});
+        }
+      }
+    };
+
+    /** Swap LQ → HQ without loader / blink once the larger texture is ready. */
+    const upgradeToHq = async (nodeId: string) => {
+      const payload = nodeById.get(nodeId);
+      if (!payload?.panoramaHq) return;
+
+      const token = ++hqUpgradeToken;
+      try {
+        await viewer.textureLoader.preloadPanorama(payload.panoramaHq);
+        if (token !== hqUpgradeToken || currentNodeId !== nodeId) return;
+
+        const { yaw, pitch } = viewer.getPosition();
+        const zoom = viewer.getZoomLevel();
+        const completed = await viewer.setPanorama(payload.panoramaHq, {
+          showLoader: false,
+          transition: false,
+          sphereCorrection: payload.sphereCorrection,
+          position: { yaw, pitch },
+          zoom,
+        });
+        if (!completed || token !== hqUpgradeToken || currentNodeId !== nodeId) return;
+        requestAnimationFrame(() => syncMarkers(nodeId));
+        warmNeighborHq(nodeId);
+      } catch {
+        // Keep LQ if HQ fails
+      }
+    };
+
+    const setActiveRoomTab = (roomId: string) => {
+      for (const tab of roomTabs) {
+        const active = tab.dataset.roomId === roomId;
+        tab.setAttribute('aria-selected', active ? 'true' : 'false');
+        tab.setAttribute('data-active', active ? 'true' : 'false');
+        tab.tabIndex = active ? 0 : -1;
+        if (active) {
+          el.setAttribute('aria-labelledby', tab.id);
+          const strip = tab.parentElement;
+          if (strip) {
+            const left = tab.offsetLeft - (strip.clientWidth - tab.clientWidth) / 2;
+            strip.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+          }
+        }
+      }
+    };
+
+    const syncMarkers = (nodeId: string) => {
+      currentNodeId = nodeId;
+      const node = nodeById.get(nodeId);
+      const wall = (node?.wallLinks || []).map((link) => ({
+        id: `wall-${nodeId}-${link.nodeId}`,
+        position: link.position,
+        html: wallPlaqueHtml(loc(link.name), link.arrow ?? 'right'),
+        anchor: 'center center',
+        size: { width: 132, height: 40 },
+        zIndex: 20,
+        data: { goto: link.nodeId },
+      }));
+
+      markers.setMarkers(wall);
+    };
+
+    const goToNode = (nodeId: string) => {
+      const current = tour.getCurrentNode();
+      if (current?.id === nodeId) {
+        const payload = nodeById.get(nodeId);
+        if (payload) setActiveRoomTab(payload.room);
+        return;
+      }
+      void tour.setCurrentNode(nodeId);
+    };
+
+    const setPanoName = (name: Localized | string | undefined) => {
+      if (!nameEl || name == null || name === '') return;
+      if (typeof name === 'string') {
+        nameEl.textContent = name;
+        return;
+      }
+      nameEl.innerHTML = `<span class="i18n-uk">${escapeHtml(name.uk)}</span><span class="i18n-en">${escapeHtml(name.en)}</span>`;
+    };
+
+    tour.addEventListener('node-changed', ({ node }) => {
+      currentNodeId = node.id;
+      const payload = nodeById.get(node.id);
+      if (payload) setActiveRoomTab(payload.room);
+      setPanoName(payload?.name ?? node.name);
+      // After VirtualTourPlugin finishes installing node.markers
+      requestAnimationFrame(() => syncMarkers(node.id));
+      void upgradeToHq(node.id);
+    });
+
+    window.addEventListener('znimay:lang', () => {
+      syncMarkers(currentNodeId);
+    });
+
+    markers.addEventListener('select-marker', ({ marker }) => {
+      const goto = marker.data?.goto as string | undefined;
+      if (!goto) return;
+      const current = nodeById.get(currentNodeId);
+      const wall = current?.wallLinks.find((link) => link.nodeId === goto);
+      void tour.setCurrentNode(
+        goto,
+        undefined,
+        wall ? { nodeId: goto, position: wall.position } : undefined,
+      );
+    });
+
+    viewer.addEventListener(
+      'ready',
+      () => {
+        const current = tour.getCurrentNode();
+        if (current) syncMarkers(current.id);
+      },
+      { once: true },
+    );
+
+    // If start node already loaded before listeners attached
+    {
+      const current = tour.getCurrentNode();
+      if (current) syncMarkers(current.id);
+    }
+
+    wireTablist(roomTabs, (tab) => {
+      const nodeId = tab.dataset.startNode;
+      if (!nodeId) return;
+      goToNode(nodeId);
+    });
+
+    window.addEventListener('znimay:lang', () => {
+      const current = tour.getCurrentNode();
+      if (current) {
+        syncMarkers(current.id);
+        const payload = nodeById.get(current.id);
+        if (nameEl && payload) nameEl.textContent = loc(payload.name);
+      }
+    });
+  }
+</script>

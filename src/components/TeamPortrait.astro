@@ -1,0 +1,49 @@
+---
+interface Props {
+  src?: string | null;
+  alt: string;
+  /** Initials / monogram when no photo */
+  monogram: string;
+  class?: string;
+  imgClass?: string;
+  loading?: 'lazy' | 'eager';
+  width?: number;
+  height?: number;
+}
+
+const {
+  src,
+  alt,
+  monogram,
+  class: className = '',
+  imgClass = 'h-full w-full object-cover',
+  loading = 'lazy',
+  width,
+  height,
+} = Astro.props;
+---
+
+<div class:list={['relative overflow-hidden bg-ink', className]}>
+  {
+    src ? (
+      <img
+        src={src}
+        alt={alt}
+        class={imgClass}
+        loading={loading}
+        width={width}
+        height={height}
+      />
+    ) : (
+      <div
+        class="absolute inset-0 flex items-end bg-[radial-gradient(120%_90%_at_20%_10%,color-mix(in_srgb,var(--color-blush)_28%,transparent),transparent_55%),linear-gradient(160deg,var(--color-ink)_0%,#3a3234_55%,color-mix(in_srgb,var(--color-blush)_22%,#252223)_100%)]"
+        aria-hidden="true"
+      >
+        <span class="select-none p-[12%] font-display text-[clamp(1.75rem,12vw,7rem)] leading-none tracking-wide text-blush/45">
+          {monogram}
+        </span>
+      </div>
+      <span class="sr-only">{alt}</span>
+    )
+  }
+</div>

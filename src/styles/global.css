@@ -1,0 +1,756 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Resagokr";
+  src: url("/fonts/resagokr.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-blush: #dfb4c4;
+  --color-ink: #252223;
+  --color-surface: #f7f2f4;
+  --color-blush-soft: #e8c9d4;
+  --color-muted: #6b5f63;
+
+  --font-brand: "Resagokr", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: max(3.25rem, calc(env(safe-area-inset-top) + 2.75rem));
+    scroll-padding-bottom: max(2.5rem, env(safe-area-inset-bottom, 0px));
+    overscroll-behavior-y: none;
+    background: var(--color-ink);
+  }
+
+  /* Enable snap only after first paint — avoids jumping to a mid-page snap target on load */
+  html.is-snap-ready {
+    scroll-snap-type: y proximity;
+  }
+
+  @media (min-width: 768px) {
+    html.is-snap-ready {
+      scroll-snap-type: y mandatory;
+      scroll-padding-top: 0;
+      scroll-padding-bottom: 0;
+    }
+
+    .page-canvas .chapter.snap-section {
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      box-sizing: border-box;
+      height: 100vh;
+      min-height: 100vh;
+      max-height: 100vh;
+    }
+  }
+
+  body {
+    @apply bg-surface text-ink font-sans antialiased;
+  }
+
+  body.nav-open,
+  body.lightbox-open,
+  body.tour-open {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  /* Tour modal: keep chrome out of the overlay */
+  body.tour-open > header,
+  body.tour-open > #mobile-nav {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* Cover rubber-band / webview chrome above the fixed header */
+  body > header::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: 100vh;
+    background: #1a1214;
+    pointer-events: none;
+  }
+
+  dialog.gallery-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    height: 100dvh;
+    height: -webkit-fill-available;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: rgba(58, 54, 56, 0.42);
+    color: var(--color-surface);
+    -webkit-backdrop-filter: blur(28px) saturate(0.85);
+    backdrop-filter: blur(28px) saturate(0.85);
+  }
+
+  dialog.gallery-lightbox:not([open]) {
+    display: none;
+  }
+
+  dialog.gallery-lightbox::backdrop {
+    background: rgba(48, 45, 47, 0.28);
+    -webkit-backdrop-filter: blur(22px) saturate(0.8);
+    backdrop-filter: blur(22px) saturate(0.8);
+  }
+
+  .gallery-tabs {
+    top: max(3.25rem, calc(env(safe-area-inset-top) + 2.85rem));
+    background: color-mix(in srgb, var(--color-surface) 72%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    transition:
+      top 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.28s ease;
+  }
+
+  @media (min-width: 640px) {
+    .gallery-tabs {
+      top: max(3.5rem, calc(env(safe-area-inset-top) + 3rem));
+    }
+  }
+
+  @media (min-width: 768px) {
+    .gallery-tabs {
+      top: max(3.75rem, calc(env(safe-area-inset-top) + 3.15rem));
+      background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+    }
+  }
+
+  @media (max-width: 767px) {
+    html[data-gallery-page='true'] > body > header {
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
+    }
+
+    html[data-gallery-page='true'][data-nav-collapsed] > body > header {
+      transform: translateY(-100%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    html[data-gallery-page='true'] .gallery-tabs {
+      background: color-mix(in srgb, var(--color-surface) 46%, transparent);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+    }
+
+    html[data-gallery-page='true'][data-nav-collapsed] .gallery-tabs {
+      top: env(safe-area-inset-top, 0px);
+    }
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-blush) 55%, transparent);
+  }
+
+  @media (max-width: 767px) {
+    .reveal {
+      transform: translateY(0.75rem);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    html.is-snap-ready {
+      scroll-snap-type: none;
+    }
+  }
+}
+
+@layer utilities {
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .snap-section {
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
+  }
+
+  /* Tall blocks (studio tour): snap to start, but allow scrolling past in one gesture */
+  .snap-section-soft {
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
+  }
+
+  /* Continuous page canvas — chapters feel like frames of one film */
+  .page-canvas {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .chapter {
+    position: relative;
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
+  }
+
+  .chapter--soft {
+    scroll-snap-stop: normal;
+  }
+
+  .chapter--ink {
+    background: var(--color-ink);
+    color: var(--color-blush-soft);
+  }
+
+  .chapter--surface {
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  .chapter-frame {
+    display: flex;
+    min-height: 100svh;
+    min-height: 100dvh;
+    flex-direction: column;
+  }
+
+  .chapter-sticky {
+    position: sticky;
+    top: max(3.25rem, calc(env(safe-area-inset-top) + 2.75rem));
+    z-index: 1;
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(1.25rem);
+    transition:
+      opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-peek {
+    opacity: 0.15;
+  }
+}
+
+/* —— Mobile app shell (home only, max-md) —— */
+.mobile-tabbar {
+  --mobile-tabbar-h: 3.65rem;
+  display: none;
+}
+
+.offer-stack {
+  display: contents;
+}
+
+.offer-panel {
+  display: contents;
+}
+
+.offer-mobile-chrome {
+  display: none;
+}
+
+.mobile-home-menu {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  /* Shell layout only when active — desktop (≥768) never enters this block */
+  html[data-mobile-app='true'][data-mobile-app-active='true'] {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'].is-snap-ready {
+    scroll-snap-type: none;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] body.has-mobile-app {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > [data-tab] {
+    display: none;
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    max-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(var(--mobile-tabbar-h, 3.65rem) + env(safe-area-inset-bottom, 0px));
+    scroll-snap-align: none;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > [data-tab].is-tab-active {
+    display: block;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root].is-tab-dragging > [data-tab].is-tab-active {
+    touch-action: pan-x;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > .offer-stack {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    background: var(--color-surface);
+    overflow: hidden;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > .offer-stack.is-tab-active {
+    display: flex;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .offer-mobile-chrome {
+    display: block;
+    flex-shrink: 0;
+    padding:
+      max(5.25rem, calc(env(safe-area-inset-top) + 4.5rem))
+      1rem
+      0;
+    background: var(--color-ink);
+    color: var(--color-blush-soft);
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .offer-mobile-tab {
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 0.65rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-blush-soft) 55%, transparent);
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .offer-mobile-tab:hover {
+    color: var(--color-blush-soft);
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .offer-mobile-tab[data-active='true'] {
+    border-bottom-color: var(--color-blush);
+    color: var(--color-blush);
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > .offer-stack > .offer-panel {
+    display: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > .offer-stack > .offer-panel.is-offer-active {
+    display: block;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > .offer-stack > .offer-panel.is-offer-active[data-offer-panel='pricing'] {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--color-surface);
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > .offer-stack > .offer-panel.is-offer-active[data-offer-panel='pricing'] .chapter {
+    display: flex !important;
+    flex: 1 1 auto;
+    flex-direction: column;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: hidden !important;
+    padding-bottom: 0.5rem !important;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > .offer-stack > .offer-panel.is-offer-active[data-offer-panel='pricing'] .chapter > div {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    flex-direction: column;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > .offer-stack > .offer-panel.is-offer-active[data-offer-panel='services'] {
+    background: var(--color-ink);
+  }
+
+  /* Nested chapters fill the active offer panel */
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > .offer-stack .chapter {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding-top: 1.25rem !important;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > .offer-stack .chapter > div {
+    display: block;
+    height: auto !important;
+    min-height: 0 !important;
+    flex: none !important;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > [data-tab].chapter {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Portfolio: fill panel, three artists on one screen */
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > [data-tab='portfolio'].is-tab-active {
+    display: flex !important;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--color-surface);
+    padding-bottom: calc(var(--mobile-tabbar-h, 3.65rem) + env(safe-area-inset-bottom, 0px) + 0.85rem);
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > [data-tab='portfolio'] > div {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .portfolio-mobile-grid {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .portfolio-mobile-card {
+    position: relative;
+    display: block;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+    background: var(--color-ink);
+  }
+
+  /* Home = menu: fill viewport, no inner page scroll */
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > [data-tab='home'].is-tab-active {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .mobile-home-menu {
+    display: flex;
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    background: var(--color-ink);
+  }
+
+  /* Hide top navbar on menu tab — hero uses the full top space */
+  html[data-mobile-app='true'][data-mobile-app-active='true'][data-menu-home='true'] body > header {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .mobile-home-menu__hero {
+    position: relative;
+    flex: 0 1 48%;
+    min-height: 34%;
+    max-height: 52%;
+    overflow: hidden;
+    background: var(--color-ink);
+  }
+
+  .mobile-home-menu__hero .hero-carousel {
+    position: absolute;
+    inset: 0;
+    min-height: 0;
+    height: 100%;
+  }
+
+  .mobile-home-menu__hero-copy {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 5;
+    padding: 5rem 1.25rem 1.45rem;
+    background: linear-gradient(
+      to top,
+      rgb(26 18 20 / 96%) 0%,
+      rgb(37 34 35 / 88%) 28%,
+      rgb(37 34 35 / 55%) 58%,
+      rgb(37 34 35 / 18%) 82%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+
+  .mobile-home-menu__hero [role='tablist'] {
+    bottom: auto;
+    top: max(0.85rem, env(safe-area-inset-top));
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+
+  .mobile-home-menu__sheet {
+    position: relative;
+    z-index: 2;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0;
+    padding: 0.75rem 1.25rem;
+    background: var(--color-ink);
+  }
+
+  .mobile-home-menu__brand {
+    margin: 0;
+    filter: drop-shadow(0 2px 14px rgb(26 18 20 / 45%));
+  }
+
+  .mobile-home-menu__tagline {
+    margin-top: 0.55rem;
+    max-width: 16rem;
+    font-size: 1rem;
+    line-height: 1.35;
+    color: var(--color-blush-soft);
+    text-shadow: 0 1px 12px rgb(26 18 20 / 55%);
+  }
+
+  .mobile-home-menu__nav {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mobile-home-menu__link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-blush) 16%, transparent);
+    padding-block: 0.7rem;
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    line-height: 1;
+    letter-spacing: 0.03em;
+    font-weight: 400;
+    color: var(--color-blush);
+    transition: color 0.15s ease, opacity 0.15s ease;
+  }
+
+  .mobile-home-menu__link:first-child {
+    border-top: 1px solid color-mix(in srgb, var(--color-blush) 16%, transparent);
+  }
+
+  .mobile-home-menu__link:active {
+    opacity: 0.7;
+  }
+
+  .mobile-home-menu__chevron {
+    display: flex;
+    width: 0.85rem;
+    height: 0.85rem;
+    color: color-mix(in srgb, var(--color-blush) 55%, transparent);
+  }
+
+  .mobile-home-menu__chevron svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .mobile-home-menu__social {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1.25rem;
+    margin-top: auto;
+    padding-top: 0.75rem;
+  }
+
+  .mobile-home-menu__social-link {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+    color: var(--color-blush);
+  }
+
+  .mobile-home-menu__social-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-blush-soft) 50%, transparent);
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] [data-services-scroll] {
+    overflow: visible !important;
+    flex: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] [data-pricing-scroll] {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > [data-tab='studio'].is-tab-active {
+    display: flex !important;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--color-surface);
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > [data-tab='studio'] > div {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] [data-studio-scroll] {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > [data-tab='contact'] {
+    padding-top: max(5.25rem, calc(env(safe-area-inset-top) + 4.5rem));
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .mobile-tabbar {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 45;
+    height: calc(var(--mobile-tabbar-h) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: color-mix(in srgb, var(--color-ink) 94%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid color-mix(in srgb, var(--color-blush) 18%, transparent);
+    color: var(--color-blush-soft);
+  }
+
+  .mobile-tabbar__inner {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    height: var(--mobile-tabbar-h);
+  }
+
+  .mobile-tabbar__tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    min-width: 0;
+    padding: 0.35rem 0.15rem;
+    border-top: 2px solid transparent;
+    border-bottom: 2px solid transparent;
+    color: color-mix(in srgb, var(--color-blush-soft) 55%, transparent);
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-tabbar__tab:hover,
+  .mobile-tabbar__tab:focus-visible {
+    color: var(--color-blush-soft);
+  }
+
+  .mobile-tabbar__tab:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-blush) 50%, transparent);
+  }
+
+  .mobile-tabbar__tab.is-active,
+  .mobile-tabbar__tab[aria-selected='true'] {
+    color: var(--color-blush);
+    border-top-color: var(--color-blush);
+    border-bottom-color: var(--color-blush);
+  }
+
+  .mobile-tabbar__icon {
+    display: flex;
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+
+  .mobile-tabbar__icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .mobile-tabbar__label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.58rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  body.tour-open .mobile-tabbar {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}

@@ -1,0 +1,39 @@
+---
+import { t } from '../i18n/ui';
+import type { Lang } from '../i18n/config';
+
+interface Props {
+  class?: string;
+  size?: 'nav' | 'hero' | 'footer';
+  lang?: Lang;
+  /**
+   * branded = blush on ink plate (default lockup)
+   * bare = blush only, for dark full-bleed surfaces (hero)
+   */
+  variant?: 'branded' | 'bare';
+}
+
+const { class: className = '', size = 'nav', lang = 'uk', variant = 'branded' } = Astro.props;
+const brand = t(lang).hero.brand;
+
+const sizeClass =
+  size === 'hero'
+    ? 'text-[clamp(2.5rem,11vw,5.75rem)] leading-[0.92] tracking-[0.08em] sm:tracking-[0.12em]'
+    : size === 'footer'
+      ? 'text-xl tracking-[0.14em]'
+      : 'text-[1.2rem] tracking-[0.12em] leading-none sm:text-[1.35rem] md:text-[1.5rem] md:tracking-[0.14em]';
+
+const plateClass =
+  variant === 'branded' ? 'bg-ink text-blush px-3.5 py-2' : 'bg-transparent text-blush';
+---
+
+<span
+  class:list={[
+    'font-brand inline-block uppercase',
+    sizeClass,
+    plateClass,
+    className,
+  ]}
+>
+  {brand}
+</span>

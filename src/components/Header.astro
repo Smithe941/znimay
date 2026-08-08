@@ -1,0 +1,431 @@
+---
+import { t } from '../i18n/ui';
+import { homePath, teamMemberPath } from '../lib/paths';
+import { team } from '../data/team';
+import BrandLogo from './BrandLogo.astro';
+import I18nText from './I18nText.astro';
+
+interface Props {
+  /** When true, nav logo stays hidden until hero brand scrolls out of view */
+  swapLogoAfterHero?: boolean;
+  /** Home page mobile app-shell — hide hamburger (tabs replace it) */
+  mobileApp?: boolean;
+}
+
+const { swapLogoAfterHero = false, mobileApp = false } = Astro.props;
+const uk = t('uk');
+const en = t('en');
+---
+
+<header
+  class="fixed inset-x-0 top-0 z-50 bg-ink/95 text-surface backdrop-blur-md supports-[backdrop-filter]:bg-ink/85"
+  data-swap-logo={swapLogoAfterHero ? 'true' : 'false'}
+>
+  <div
+    class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 md:px-8 md:py-3.5"
+  >
+    <a
+      id="nav-brand"
+      href={homePath()}
+      class:list={[
+        'relative z-50 block min-w-0 cursor-pointer transition-[opacity,transform] duration-300 ease-out hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70',
+        swapLogoAfterHero
+          ? 'pointer-events-none -translate-y-1 opacity-0'
+          : 'opacity-100',
+      ]}
+      aria-label={uk.hero.brand}
+      aria-hidden={swapLogoAfterHero ? 'true' : undefined}
+      tabindex={swapLogoAfterHero ? -1 : undefined}
+    >
+      <BrandLogo lang="uk" size="nav" variant="bare" />
+    </a>
+
+    <nav
+      class="desktop-nav hidden items-center gap-8 text-sm tracking-wide text-blush-soft/90 md:flex"
+      aria-label="Primary"
+      data-desktop-nav
+    >
+      <a
+        class="desktop-nav__link cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+        href={`${homePath()}#team`}
+        data-nav-section="team"
+      >
+        <I18nText uk={uk.nav.team} en={en.nav.team} />
+      </a>
+      <a
+        class="desktop-nav__link cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+        href={`${homePath()}#studio`}
+        data-nav-section="studio"
+      >
+        <I18nText uk={uk.nav.studio} en={en.nav.studio} />
+      </a>
+      <a
+        class="desktop-nav__link cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+        href={`${homePath()}#services`}
+        data-nav-section="services"
+      >
+        <I18nText uk={uk.nav.services} en={en.nav.services} />
+      </a>
+      <a
+        class="desktop-nav__link cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+        href={`${homePath()}#pricing`}
+        data-nav-section="pricing"
+      >
+        <I18nText uk={uk.nav.pricing} en={en.nav.pricing} />
+      </a>
+      <a
+        class="desktop-nav__link cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+        href={`${homePath()}#contact`}
+        data-nav-section="contact"
+      >
+        <I18nText uk={uk.nav.contact} en={en.nav.contact} />
+      </a>
+    </nav>
+
+    <div class="relative z-50 flex items-center gap-0.5 sm:gap-1">
+      <a
+        class="flex size-11 cursor-pointer items-center justify-center text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70"
+        href="https://t.me/znimay_bot"
+        target="_blank"
+        rel="noreferrer"
+        aria-label={uk.contact.telegramLabel}
+      >
+        <svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path
+            d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"
+          />
+        </svg>
+      </a>
+      <a
+        class="flex size-11 cursor-pointer items-center justify-center text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70"
+        href="https://www.instagram.com/znimay_phstudio/"
+        target="_blank"
+        rel="noreferrer"
+        aria-label={uk.contact.instagramLabel}
+      >
+        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="5" />
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+        </svg>
+      </a>
+
+      {
+        mobileApp ? (
+          <button
+            type="button"
+            id="nav-toggle"
+            class="flex h-11 w-11 cursor-pointer items-center justify-center text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink max-md:hidden md:hidden"
+            aria-expanded="false"
+            aria-controls="mobile-nav"
+            aria-label={uk.nav.home}
+            data-label-open-uk={uk.nav.home}
+            data-label-open-en={en.nav.home}
+            data-label-close-uk="Закрити"
+            data-label-close-en="Close"
+          >
+            <span class="sr-only" data-nav-label>
+              {uk.nav.home}
+            </span>
+            <span class="flex w-5 flex-col gap-1.5" aria-hidden="true">
+              <span class="nav-line block h-px w-full bg-current transition duration-300" data-line="1"></span>
+              <span class="nav-line block h-px w-full bg-current transition duration-300" data-line="2"></span>
+            </span>
+          </button>
+        ) : (
+          <a
+            href={homePath()}
+            class="flex h-11 w-11 cursor-pointer items-center justify-center text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink md:hidden"
+            aria-label={uk.nav.home}
+          >
+            <span class="sr-only">{uk.nav.home}</span>
+            <span class="flex w-5 flex-col gap-1.5" aria-hidden="true">
+              <span class="block h-px w-full bg-current"></span>
+              <span class="block h-px w-full bg-current"></span>
+            </span>
+          </a>
+        )
+      }
+    </div>
+  </div>
+</header>
+
+<style>
+  .desktop-nav__link {
+    padding-bottom: 0.2rem;
+    border-bottom: 2px solid transparent;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
+  }
+
+  .desktop-nav__link.is-active {
+    color: var(--color-blush);
+    border-bottom-color: var(--color-blush);
+  }
+</style>
+
+<div
+  id="mobile-nav"
+  class:list={[
+    'fixed inset-0 z-40 hidden bg-ink md:hidden',
+    mobileApp && 'max-md:hidden',
+  ]}
+  hidden
+  role="dialog"
+  aria-modal="true"
+  aria-label="Menu"
+>
+  <div
+    class="flex h-full flex-col justify-between px-6 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[calc(4.5rem+env(safe-area-inset-top))]"
+  >
+    <nav class="flex flex-col gap-1" aria-label="Mobile">
+      <a
+        class="cursor-pointer border-b border-blush/15 py-5 font-display text-4xl text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70"
+        href={`${homePath()}#team`}
+        data-nav-link
+      >
+        <I18nText uk={uk.nav.team} en={en.nav.team} />
+      </a>
+      <a
+        class="cursor-pointer border-b border-blush/15 py-5 font-display text-4xl text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70"
+        href={`${homePath()}#studio`}
+        data-nav-link
+      >
+        <I18nText uk={uk.nav.studio} en={en.nav.studio} />
+      </a>
+      <a
+        class="cursor-pointer border-b border-blush/15 py-5 font-display text-4xl text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70"
+        href={`${homePath()}#services`}
+        data-nav-link
+      >
+        <I18nText uk={uk.nav.services} en={en.nav.services} />
+      </a>
+      <a
+        class="cursor-pointer border-b border-blush/15 py-5 font-display text-4xl text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70"
+        href={`${homePath()}#pricing`}
+        data-nav-link
+      >
+        <I18nText uk={uk.nav.pricing} en={en.nav.pricing} />
+      </a>
+      <a
+        class="cursor-pointer border-b border-blush/15 py-5 font-display text-4xl text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70"
+        href={`${homePath()}#contact`}
+        data-nav-link
+      >
+        <I18nText uk={uk.nav.contact} en={en.nav.contact} />
+      </a>
+
+      <p class="mt-10 text-xs tracking-[0.2em] uppercase text-blush-soft/50">
+        <I18nText uk={uk.nav.team} en={en.nav.team} />
+      </p>
+      <div class="mt-3 flex flex-col">
+        {
+          team.map((member) => (
+            <a
+              class="cursor-pointer py-3 text-xl text-blush-soft transition hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:text-blush"
+              href={teamMemberPath(member.slug)}
+              data-nav-link
+            >
+              <I18nText uk={member.name.uk} en={member.name.en} />
+            </a>
+          ))
+        }
+      </div>
+    </nav>
+
+    <div class="flex flex-col gap-3">
+      <a
+        class="inline-flex cursor-pointer items-center gap-3 text-sm tracking-wide text-blush-soft/70 transition hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+        href="https://t.me/znimay_bot"
+        target="_blank"
+        rel="noreferrer"
+      >
+        <svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path
+            d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"
+          />
+        </svg>
+        @znimay_bot
+      </a>
+      <a
+        class="inline-flex cursor-pointer items-center gap-3 text-sm tracking-wide text-blush-soft/70 transition hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+        href="https://www.instagram.com/znimay_phstudio/"
+        target="_blank"
+        rel="noreferrer"
+      >
+        <svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="5" />
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+        </svg>
+        @znimay_phstudio
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const toggle = document.getElementById('nav-toggle');
+  const panel = document.getElementById('mobile-nav');
+  const label = toggle?.querySelector('[data-nav-label]');
+  const line1 = toggle?.querySelector('[data-line="1"]') as HTMLElement | null;
+  const line2 = toggle?.querySelector('[data-line="2"]') as HTMLElement | null;
+
+  function menuLabels() {
+    return {
+      open: toggle?.getAttribute('data-label-open-uk') || 'Меню',
+      close: toggle?.getAttribute('data-label-close-uk') || 'Закрити',
+    };
+  }
+
+  function setOpen(open: boolean) {
+    if (!toggle || !panel) return;
+    const { open: openLabel, close: closeLabel } = menuLabels();
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? closeLabel : openLabel);
+    if (label) label.textContent = open ? closeLabel : openLabel;
+    panel.hidden = !open;
+    panel.classList.toggle('hidden', !open);
+    document.body.classList.toggle('nav-open', open);
+    if (line1 && line2) {
+      line1.style.transform = open ? 'translateY(3.5px) rotate(45deg)' : '';
+      line2.style.transform = open ? 'translateY(-3.5px) rotate(-45deg)' : '';
+    }
+  }
+
+  toggle?.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    setOpen(open);
+  });
+
+  panel?.querySelectorAll('[data-nav-link]').forEach((item) => {
+    item.addEventListener('click', () => setOpen(false));
+  });
+
+  window.addEventListener('znimay:tour-open', () => setOpen(false));
+
+  const header = document.querySelector('header[data-swap-logo]');
+  const navBrand = document.getElementById('nav-brand');
+  const heroBrand = document.getElementById('hero-brand');
+
+  if (header?.getAttribute('data-swap-logo') === 'true' && navBrand && heroBrand) {
+    const setNavLogoVisible = (visible: boolean) => {
+      navBrand.classList.toggle('opacity-0', !visible);
+      navBrand.classList.toggle('-translate-y-1', !visible);
+      navBrand.classList.toggle('pointer-events-none', !visible);
+      navBrand.classList.toggle('opacity-100', visible);
+      navBrand.classList.toggle('translate-y-0', visible);
+      navBrand.setAttribute('aria-hidden', visible ? 'false' : 'true');
+      if (visible) {
+        navBrand.removeAttribute('tabindex');
+      } else {
+        navBrand.setAttribute('tabindex', '-1');
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setNavLogoVisible(!entry.isIntersecting);
+      },
+      {
+        root: null,
+        threshold: 0,
+        rootMargin: '-64px 0px 0px 0px',
+      },
+    );
+
+    observer.observe(heroBrand);
+  }
+
+  const desktopNav = document.querySelector<HTMLElement>('[data-desktop-nav]');
+  const desktopLinks = desktopNav
+    ? [...desktopNav.querySelectorAll<HTMLAnchorElement>('[data-nav-section]')]
+    : [];
+  const desktopMq = window.matchMedia('(min-width: 768px)');
+
+  if (desktopNav && desktopLinks.length) {
+    const ratios = new Map<string, number>();
+    let observer: IntersectionObserver | null = null;
+
+    const setActive = (id: string) => {
+      desktopLinks.forEach((link) => {
+        const on = Boolean(id) && link.dataset.navSection === id;
+        link.classList.toggle('is-active', on);
+        if (on) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
+    };
+
+    const syncFromRatios = () => {
+      let best = '';
+      let bestRatio = 0.28;
+      for (const [id, ratio] of ratios) {
+        if (ratio > bestRatio) {
+          bestRatio = ratio;
+          best = id;
+        }
+      }
+      setActive(best);
+    };
+
+    const start = () => {
+      observer?.disconnect();
+      ratios.clear();
+      if (!desktopMq.matches) {
+        setActive('');
+        return;
+      }
+      const sections = desktopLinks
+        .map((link) => document.getElementById(link.dataset.navSection || ''))
+        .filter((el): el is HTMLElement => Boolean(el));
+      if (!sections.length) return;
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            ratios.set(entry.target.id, entry.isIntersecting ? entry.intersectionRatio : 0);
+          }
+          syncFromRatios();
+        },
+        { threshold: [0, 0.2, 0.35, 0.5, 0.65, 0.8, 1], rootMargin: '-12% 0px -35% 0px' },
+      );
+      sections.forEach((section) => observer?.observe(section));
+    };
+
+    desktopLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        const id = link.dataset.navSection;
+        if (id) setActive(id);
+      });
+    });
+
+    desktopMq.addEventListener('change', start);
+    start();
+  }
+
+  if (
+    document.documentElement.getAttribute('data-gallery-page') === 'true' &&
+    window.matchMedia('(max-width: 767px)').matches
+  ) {
+    let lastY = window.scrollY;
+    let collapsed = false;
+
+    const syncNav = () => {
+      document.documentElement.toggleAttribute('data-nav-collapsed', collapsed);
+    };
+
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (document.body.classList.contains('lightbox-open')) return;
+        const y = window.scrollY;
+        if (y < 28) collapsed = false;
+        else if (y > lastY + 8) collapsed = true;
+        else if (y < lastY - 8) collapsed = false;
+        lastY = y;
+        syncNav();
+      },
+      { passive: true },
+    );
+  }
+</script>

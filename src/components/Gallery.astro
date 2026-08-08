@@ -1,0 +1,486 @@
+---
+import type { CloudImage } from '../lib/cloudinary';
+import { imageUrl } from '../lib/cloudinary';
+import { t } from '../i18n/ui';
+
+interface Props {
+  images: CloudImage[];
+  emptyLabel: string;
+  columns?: 2 | 3;
+  /** Unique id when multiple galleries are on one page */
+  id?: string;
+  /**
+   * When false, media uses data-src and loads only after the tab is shown.
+   * First/active tab should pass true (or omit).
+   */
+  loadMedia?: boolean;
+}
+
+const { images, emptyLabel, columns = 3, id = 'gallery', loadMedia = true } = Astro.props;
+const uk = t('uk');
+const en = t('en');
+const lightboxId = `${id}-lightbox`;
+const imageId = `${id}-lightbox-image`;
+const videoId = `${id}-lightbox-video`;
+/** First two rows + the peeking next row (mobile 2-col / desktop 3-col). */
+const eagerCount = columns === 2 ? 6 : 9;
+const gridClass =
+  columns === 2
+    ? 'grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3'
+    : 'grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 md:gap-4';
+---
+
+{
+  images.length === 0 ? (
+    <p class="reveal text-muted">{emptyLabel}</p>
+  ) : (
+    <div
+      class={gridClass}
+      data-gallery={id}
+      data-gallery-loaded={loadMedia ? 'true' : 'false'}
+      data-eager-count={eagerCount}
+    >
+      {images.map((image, index) => {
+        const isVideo = image.resourceType === 'video';
+        const thumb = imageUrl(image.publicId, {
+          preset: 'thumb',
+          resourceType: image.resourceType,
+        });
+        const full = imageUrl(image.publicId, {
+          preset: 'lightbox',
+          resourceType: image.resourceType,
+          videoStream: isVideo,
+        });
+        const tall = image.height > image.width * 1.15;
+        const eager = index < eagerCount;
+        return (
+          <button
+            type="button"
+            class:list={[
+              'reveal reveal-peek group relative block w-full cursor-pointer overflow-hidden bg-ink text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blush focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+              tall && 'row-span-2',
+            ]}
+            style={`transition-delay: ${Math.min(index * 40, 240)}ms`}
+            data-lightbox-src={full}
+            data-lightbox-alt={image.alt}
+            data-lightbox-type={isVideo ? 'video' : 'image'}
+            data-lightbox-w={image.width || undefined}
+            data-lightbox-h={image.height || undefined}
+            data-lightbox-index={index}
+            aria-label={image.alt}
+          >
+            <img
+              src={loadMedia ? thumb : undefined}
+              data-src={thumb}
+              alt={image.alt}
+              loading={loadMedia ? (eager ? 'eager' : 'lazy') : undefined}
+              fetchpriority={loadMedia && index < columns ? 'high' : undefined}
+              decoding="async"
+              width={image.width || undefined}
+              height={image.height || undefined}
+              class:list={[
+                'w-full object-cover transition duration-700 ease-out group-active:opacity-90 md:group-hover:scale-[1.02] md:group-hover:opacity-90',
+                tall ? 'h-full min-h-[12rem] sm:min-h-[18rem]' : 'aspect-[3/4] sm:aspect-[3/4]',
+              ]}
+            />
+            {isVideo && (
+              <span
+                class="pointer-events-none absolute inset-0 flex items-center justify-center bg-ink/25"
+                aria-hidden="true"
+              >
+                <span class="flex h-12 w-12 items-center justify-center border border-blush/70 bg-ink/70 text-blush">
+                  ▶
+                </span>
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  )
+}
+
+<dialog
+  id={lightboxId}
+  class="gallery-lightbox m-0 h-full max-h-none w-full max-w-none border-0 p-0 text-surface"
+>
+  <div
+    class="relative flex h-full w-full cursor-pointer items-center justify-center p-3 sm:p-6 md:p-10"
+    data-lightbox-stage
+  >
+    <button
+      type="button"
+      class="absolute right-[max(0.75rem,env(safe-area-inset-right))] top-[max(0.75rem,env(safe-area-inset-top))] z-20 flex h-11 w-11 cursor-pointer items-center justify-center text-xs tracking-widest text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush active:opacity-70"
+      data-lightbox-close
+      aria-label={uk.portfolio.lightboxClose}
+      data-label-uk={uk.portfolio.lightboxClose}
+      data-label-en={en.portfolio.lightboxClose}
+    >
+      ✕
+    </button>
+
+    <button
+      type="button"
+      class="absolute left-[max(0.5rem,env(safe-area-inset-left))] top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center border border-blush/35 text-blush transition hover:border-blush hover:bg-blush/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush active:opacity-70 md:flex sm:left-[max(1rem,env(safe-area-inset-left))] sm:h-14 sm:w-14"
+      data-lightbox-prev
+      aria-label={uk.portfolio.lightboxPrev}
+      data-label-uk={uk.portfolio.lightboxPrev}
+      data-label-en={en.portfolio.lightboxPrev}
+    >
+      <svg class="size-5" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path
+          d="M10 3 5 8l5 5"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+
+    <button
+      type="button"
+      class="absolute right-[max(0.5rem,env(safe-area-inset-right))] top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center border border-blush/35 text-blush transition hover:border-blush hover:bg-blush/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush active:opacity-70 md:flex sm:right-[max(1rem,env(safe-area-inset-right))] sm:h-14 sm:w-14"
+      data-lightbox-next
+      aria-label={uk.portfolio.lightboxNext}
+      data-label-uk={uk.portfolio.lightboxNext}
+      data-label-en={en.portfolio.lightboxNext}
+    >
+      <svg class="size-5" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path
+          d="M6 3l5 5-5 5"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+
+    <img
+      id={imageId}
+      src=""
+      alt=""
+      class="hidden max-h-[85dvh] max-w-[min(100%,calc(100%-1.5rem))] cursor-default object-contain opacity-0 transition-opacity duration-300 md:max-w-[min(100%,calc(100%-8rem))]"
+      data-lightbox-media="image"
+    />
+    <video
+      id={videoId}
+      class="lightbox-video hidden max-h-[85dvh] max-w-[min(100%,calc(100%-1.5rem))] cursor-default object-contain opacity-0 transition-opacity duration-300 md:max-w-[min(100%,calc(100%-8rem))]"
+      controls
+      playsinline
+      data-lightbox-media="video"
+    >
+    </video>
+  </div>
+</dialog>
+
+<style>
+  /* Without intrinsic size, <video> defaults to 300×150 and portrait clips look squashed. */
+  .lightbox-video {
+    width: auto;
+    height: auto;
+    aspect-ratio: var(--lightbox-ar, auto);
+  }
+</style>
+
+<script define:vars={{ lightboxId, imageId, videoId, galleryId: id }}>
+  const root = document.querySelector(`[data-gallery="${galleryId}"]`);
+  const dialog = document.getElementById(lightboxId);
+  const image = document.getElementById(imageId);
+  const video = document.getElementById(videoId);
+  const stage = dialog?.querySelector('[data-lightbox-stage]');
+  const closeBtn = dialog?.querySelector('[data-lightbox-close]');
+  const prevBtn = dialog?.querySelector('[data-lightbox-prev]');
+  const nextBtn = dialog?.querySelector('[data-lightbox-next]');
+  const items = root
+    ? Array.from(root.querySelectorAll('[data-lightbox-src]'))
+    : [];
+
+  let currentIndex = -1;
+  let swipeStartX = 0;
+  let swipeStartY = 0;
+  let swipeTracking = false;
+  let swipeMoved = false;
+  let swipeAxis = null;
+
+  function showMedia(el) {
+    if (!el) return;
+    el.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      el.classList.remove('opacity-0');
+      el.classList.add('opacity-100');
+    });
+  }
+
+  function hideMedia(el) {
+    if (!el) return;
+    el.classList.add('hidden', 'opacity-0');
+    el.classList.remove('opacity-100');
+  }
+
+  function clearVideoFrame() {
+    if (!video) return;
+    video.pause();
+    video.removeAttribute('src');
+    video.removeAttribute('width');
+    video.removeAttribute('height');
+    video.style.removeProperty('--lightbox-ar');
+    video.load();
+  }
+
+  function applyVideoAspect(w, h) {
+    if (!video || !w || !h) return;
+    video.setAttribute('width', String(w));
+    video.setAttribute('height', String(h));
+    video.style.setProperty('--lightbox-ar', `${w} / ${h}`);
+  }
+
+  function syncNavLabels() {
+    const lang = document.documentElement.getAttribute('data-lang') === 'en' ? 'en' : 'uk';
+    for (const btn of [closeBtn, prevBtn, nextBtn]) {
+      if (!(btn instanceof HTMLElement)) continue;
+      const label = btn.getAttribute(`data-label-${lang}`);
+      if (label) btn.setAttribute('aria-label', label);
+    }
+  }
+
+  function updateNavVisibility() {
+    const multi = items.length > 1;
+    for (const btn of [prevBtn, nextBtn]) {
+      if (!(btn instanceof HTMLElement)) continue;
+      btn.classList.toggle('pointer-events-none', !multi);
+      btn.classList.toggle('opacity-0', !multi);
+      btn.setAttribute('tabindex', multi ? '0' : '-1');
+    }
+  }
+
+  function showItem(index) {
+    if (!dialog || items.length === 0) return;
+    const len = items.length;
+    currentIndex = ((index % len) + len) % len;
+    const button = items[currentIndex];
+    const src = button.getAttribute('data-lightbox-src');
+    const alt = button.getAttribute('data-lightbox-alt') || '';
+    const type = button.getAttribute('data-lightbox-type') || 'image';
+    const w = Number(button.getAttribute('data-lightbox-w')) || 0;
+    const h = Number(button.getAttribute('data-lightbox-h')) || 0;
+    if (!src) return;
+
+    hideMedia(image);
+    hideMedia(video);
+    if (image) {
+      image.src = '';
+      image.alt = '';
+    }
+    clearVideoFrame();
+
+    if (type === 'video' && video) {
+      applyVideoAspect(w, h);
+      video.src = src;
+      video.setAttribute('aria-label', alt);
+      const onMeta = () => {
+        if (video.videoWidth && video.videoHeight) {
+          applyVideoAspect(video.videoWidth, video.videoHeight);
+        }
+        video.removeEventListener('loadedmetadata', onMeta);
+      };
+      video.addEventListener('loadedmetadata', onMeta);
+      showMedia(video);
+      void video.play().catch(() => {});
+    } else if (image) {
+      image.src = src;
+      image.alt = alt;
+      showMedia(image);
+    }
+  }
+
+  function openLightbox(index) {
+    if (!dialog) return;
+    syncNavLabels();
+    updateNavVisibility();
+    dialog.showModal();
+    document.body.classList.add('lightbox-open');
+    showItem(index);
+  }
+
+  function closeLightbox() {
+    if (!dialog?.open) return;
+    dialog.close();
+    document.body.classList.remove('lightbox-open');
+    hideMedia(image);
+    hideMedia(video);
+    if (image) {
+      image.src = '';
+      image.alt = '';
+    }
+    clearVideoFrame();
+    currentIndex = -1;
+  }
+
+  function goPrev() {
+    if (currentIndex < 0 || items.length < 2) return;
+    showItem(currentIndex - 1);
+  }
+
+  function goNext() {
+    if (currentIndex < 0 || items.length < 2) return;
+    showItem(currentIndex + 1);
+  }
+
+  items.forEach((button, index) => {
+    button.addEventListener('click', () => openLightbox(index));
+  });
+
+  closeBtn?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    closeLightbox();
+  });
+  prevBtn?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    goPrev();
+  });
+  nextBtn?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    goNext();
+  });
+
+  // Backdrop / empty stage click closes (not media or controls)
+  stage?.addEventListener('click', (event) => {
+    if (swipeMoved) {
+      swipeMoved = false;
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    if (event.target === stage) closeLightbox();
+  });
+
+  stage?.addEventListener(
+    'touchstart',
+    (event) => {
+      if (!dialog?.open || event.touches.length !== 1 || items.length < 2) return;
+      swipeStartX = event.touches[0].clientX;
+      swipeStartY = event.touches[0].clientY;
+      swipeTracking = true;
+      swipeMoved = false;
+      swipeAxis = null;
+    },
+    { passive: true },
+  );
+
+  stage?.addEventListener(
+    'touchmove',
+    (event) => {
+      if (!swipeTracking || event.touches.length !== 1) return;
+      const dx = event.touches[0].clientX - swipeStartX;
+      const dy = event.touches[0].clientY - swipeStartY;
+      if (!swipeAxis) {
+        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+        swipeAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+      }
+      if (swipeAxis === 'x' && event.cancelable) event.preventDefault();
+    },
+    { passive: false },
+  );
+
+  stage?.addEventListener(
+    'touchend',
+    (event) => {
+      if (!swipeTracking) return;
+      swipeTracking = false;
+      const axis = swipeAxis;
+      swipeAxis = null;
+      const t = event.changedTouches[0];
+      const dx = t.clientX - swipeStartX;
+      const dy = t.clientY - swipeStartY;
+      if (axis !== 'x' || Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
+      swipeMoved = true;
+      if (dx < 0) goNext();
+      else goPrev();
+    },
+    { passive: true },
+  );
+
+  stage?.addEventListener(
+    'touchcancel',
+    () => {
+      swipeTracking = false;
+      swipeAxis = null;
+    },
+    { passive: true },
+  );
+  dialog?.addEventListener('click', (event) => {
+    if (event.target === dialog) closeLightbox();
+  });
+  for (const media of [image, video]) {
+    media?.addEventListener('click', (event) => event.stopPropagation());
+  }
+  dialog?.addEventListener('close', () => {
+    document.body.classList.remove('lightbox-open');
+    hideMedia(image);
+    hideMedia(video);
+    if (image) {
+      image.src = '';
+      image.alt = '';
+    }
+    clearVideoFrame();
+    currentIndex = -1;
+  });
+
+  dialog?.addEventListener('keydown', (event) => {
+    if (!dialog.open) return;
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      goPrev();
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      goNext();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      closeLightbox();
+    }
+  });
+
+  window.addEventListener('znimay:lang', syncNavLabels);
+
+  // Native lazy often waits until a tile is well inside the viewport, so a
+  // barely-visible next row stays blank. Promote those images early.
+  function forceLoadImg(img) {
+    if (!(img instanceof HTMLImageElement)) return;
+    const src = img.getAttribute('data-src') || img.getAttribute('src');
+    if (!src) return;
+    if (img.getAttribute('loading') === 'lazy') img.loading = 'eager';
+    if (img.getAttribute('src') !== src) img.src = src;
+    else if (!img.complete) {
+      // Re-assign to nudge browsers that deferred a lazy src
+      img.src = src;
+    }
+  }
+
+  function warmNearGalleryImages() {
+    if (!root || !('IntersectionObserver' in window)) return;
+    const lazyImgs = root.querySelectorAll('img[loading="lazy"], img:not([src])');
+    if (!lazyImgs.length) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          forceLoadImg(entry.target);
+          io.unobserve(entry.target);
+        }
+      },
+      // ~one viewport ahead so the peeking next row is already decoded
+      { root: null, rootMargin: '120% 0px', threshold: 0.01 },
+    );
+
+    lazyImgs.forEach((img) => io.observe(img));
+  }
+
+  warmNearGalleryImages();
+  root?.addEventListener('znimay:gallery-media', () => {
+    // Deferred tab galleries: warm the peek row after src is attached
+    requestAnimationFrame(warmNearGalleryImages);
+  });
+</script>

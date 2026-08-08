@@ -1,0 +1,98 @@
+---
+import { t } from '../i18n/ui';
+import { team, teamMonogram } from '../data/team';
+import { teamMemberPath } from '../lib/paths';
+import { fetchTeamHero, imageUrl } from '../lib/cloudinary';
+import TeamPortrait from './TeamPortrait.astro';
+import I18nText from './I18nText.astro';
+
+const uk = t('uk');
+const en = t('en');
+
+const cards = await Promise.all(
+  team.map(async (member) => {
+    const hero = await fetchTeamHero(member.folder);
+    return {
+      member,
+      coverUrl: hero ? imageUrl(hero.publicId, 'card') : null,
+      coverAlt: hero?.alt ?? member.name.uk,
+      monogram: teamMonogram(member.name.uk),
+    };
+  }),
+);
+---
+
+<section
+  id="team"
+  data-tab="portfolio"
+  class="chapter chapter--surface snap-section flex flex-col px-4 pt-[max(5.25rem,calc(env(safe-area-inset-top)+4.5rem))] pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-20 sm:pb-12 md:overflow-hidden md:pt-24 md:pb-8"
+>
+  <div class="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col md:px-8">
+    <div class="reveal mb-3 max-w-xl shrink-0 sm:mb-6 md:mb-6">
+      <h2 class="font-display text-[1.85rem] leading-none sm:text-4xl md:text-5xl">
+        <I18nText uk={uk.team.title} en={en.team.title} />
+      </h2>
+      <p class="mt-1.5 text-[0.85rem] leading-snug text-muted sm:mt-3 sm:text-[0.95rem] sm:leading-relaxed md:mt-4 md:text-base">
+        <I18nText uk={uk.team.subtitle} en={en.team.subtitle} />
+      </p>
+    </div>
+
+    <!-- Mobile: three artists fill one viewport -->
+    <div class="portfolio-mobile-grid md:hidden" data-portfolio-mobile>
+      {
+        cards.map(({ member, coverUrl, coverAlt, monogram }, index) => (
+          <a
+            href={teamMemberPath(member.slug)}
+            class="portfolio-mobile-card reveal group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            style={`transition-delay: ${index * 50}ms`}
+          >
+            <TeamPortrait
+              src={coverUrl}
+              alt={coverAlt}
+              monogram={monogram}
+              class="absolute inset-0 h-full w-full"
+              imgClass="h-full w-full object-cover transition duration-500 group-active:scale-[1.02]"
+            />
+            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent px-3 pb-2.5 pt-10">
+              <h3 class="font-display text-[1.35rem] leading-none tracking-wide text-blush">
+                <I18nText uk={member.name.uk} en={member.name.en} />
+              </h3>
+              <span class="mt-1 inline-block text-[0.58rem] tracking-[0.14em] uppercase text-blush-soft/80">
+                <I18nText uk={uk.team.viewPortfolio} en={en.team.viewPortfolio} />
+              </span>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+
+    <!-- Desktop: existing grid -->
+    <div class="hidden min-h-0 flex-1 md:grid md:grid-cols-3 md:gap-8">
+      {
+        cards.map(({ member, coverUrl, coverAlt, monogram }, index) => (
+          <a
+            href={teamMemberPath(member.slug)}
+            class="reveal group flex h-full min-h-0 cursor-pointer flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            style={`transition-delay: ${index * 80}ms`}
+          >
+            <TeamPortrait
+              src={coverUrl}
+              alt={coverAlt}
+              monogram={monogram}
+              class="relative min-h-0 w-full flex-1"
+              imgClass="absolute inset-0 h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.03]"
+            />
+            <div class="mt-3 flex shrink-0 items-baseline justify-between gap-4 md:mt-4">
+              <h3 class="font-display text-2xl tracking-wide text-ink lg:text-3xl">
+                <I18nText uk={member.name.uk} en={member.name.en} />
+              </h3>
+              <span class="text-xs tracking-[0.18em] uppercase text-muted transition group-hover:text-ink">
+                <I18nText uk={uk.team.viewPortfolio} en={en.team.viewPortfolio} />
+              </span>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</section>

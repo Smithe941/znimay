@@ -1,0 +1,316 @@
+---
+import { t } from '../i18n/ui';
+import { packages, hourly, videoOffers, formatUah } from '../data/pricing';
+import I18nText from './I18nText.astro';
+
+const uk = t('uk');
+const en = t('en');
+
+const tabs = [
+  { id: 'shoot', uk: uk.pricing.tabShoot, en: en.pricing.tabShoot },
+  { id: 'video', uk: uk.pricing.tabVideo, en: en.pricing.tabVideo },
+  { id: 'rent', uk: uk.pricing.tabRent, en: en.pricing.tabRent },
+] as const;
+---
+
+<section
+  id="pricing"
+  class="chapter chapter--surface snap-section flex flex-col px-4 pt-[max(5.25rem,calc(env(safe-area-inset-top)+4.5rem))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-20 md:h-[100svh] md:h-[100dvh] md:overflow-hidden md:px-8 md:pt-24"
+>
+  <div class="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col" data-pricing>
+    <div class="shrink-0">
+      <div class="mb-4 hidden max-w-xl sm:mb-5 md:mb-6 md:block">
+        <h2 class="font-display text-[2.35rem] leading-none sm:text-4xl md:text-5xl">
+          <I18nText uk={uk.pricing.title} en={en.pricing.title} />
+        </h2>
+        <p class="mt-2 text-[0.95rem] leading-snug text-muted sm:text-base sm:leading-relaxed">
+          <I18nText uk={uk.pricing.subtitle} en={en.pricing.subtitle} />
+        </p>
+      </div>
+
+      <div
+        class="-mx-4 border-y border-ink/10 sm:-mx-6 md:-mx-8"
+        role="tablist"
+        aria-label={uk.pricing.title}
+        data-pricing-tabs
+      >
+        <div class="flex">
+          {
+            tabs.map((tab, index) => (
+              <button
+                type="button"
+                role="tab"
+                id={`pricing-tab-${tab.id}`}
+                class="pricing-tab flex-1 cursor-pointer py-3.5 text-center text-[0.7rem] tracking-[0.14em] uppercase transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:py-4 sm:text-xs sm:tracking-[0.16em]"
+                aria-selected={index === 0 ? 'true' : 'false'}
+                aria-controls={`pricing-panel-${tab.id}`}
+                data-pricing-tab={tab.id}
+                data-active={index === 0 ? 'true' : 'false'}
+                tabindex={index === 0 ? 0 : -1}
+              >
+                <I18nText uk={tab.uk} en={tab.en} />
+              </button>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="min-h-0 flex-1 overflow-y-auto overscroll-y-auto pt-3 sm:pt-4"
+      data-pricing-scroll
+    >
+    <div
+      id="pricing-panel-shoot"
+      role="tabpanel"
+      aria-labelledby="pricing-tab-shoot"
+      data-pricing-panel="shoot"
+    >
+      <p class="mb-3 text-[0.9rem] leading-snug text-muted sm:mb-4 sm:text-[0.95rem]">
+        <I18nText uk={uk.pricing.shootLead} en={en.pricing.shootLead} />
+      </p>
+
+      <ul class="divide-y divide-ink/10 border-y border-ink/10">
+        {
+          packages.map((pkg) => (
+            <li>
+              <details class="pricing-pkg group">
+                <summary class="flex cursor-pointer list-none items-center gap-3 rounded-sm px-3 py-3.5 transition-colors hover:bg-ink/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:gap-4 sm:px-4 sm:py-4 [&::-webkit-details-marker]:hidden">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+                      <span class="font-display text-[1.65rem] leading-none tracking-wide sm:text-3xl">
+                        {pkg.name}
+                      </span>
+                      <span class="text-sm text-muted">
+                        <I18nText uk={pkg.duration.uk} en={pkg.duration.en} />
+                      </span>
+                    </div>
+                    <p class="mt-1 text-[0.9rem] leading-snug text-muted sm:mt-1.5 sm:text-[0.95rem]">
+                      <I18nText uk={pkg.summary.uk} en={pkg.summary.en} />
+                    </p>
+                  </div>
+                  <div class="shrink-0 text-right">
+                    <p class="text-[1.05rem] font-medium tabular-nums tracking-wide sm:text-xl">
+                      <I18nText uk={formatUah(pkg.price, 'uk')} en={formatUah(pkg.price, 'en')} />
+                    </p>
+                    <span class="mt-1 inline-flex items-center gap-1 text-[0.65rem] tracking-[0.14em] uppercase text-muted transition group-hover:text-ink group-open:text-ink">
+                      <I18nText uk={uk.pricing.details} en={en.pricing.details} />
+                      <svg
+                        class="h-3 w-3 transition-transform group-open:rotate-180"
+                        viewBox="0 0 12 12"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M2.5 4.5 6 8l3.5-3.5"
+                          stroke="currentColor"
+                          stroke-width="1.4"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </div>
+                </summary>
+                <ul class="space-y-1.5 px-3 pb-3.5 text-[0.95rem] leading-snug text-ink/80 sm:px-4 sm:pb-4">
+                  {pkg.features.map((feature) => (
+                    <li class="flex gap-2.5">
+                      <span class="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-blush" aria-hidden="true" />
+                      <span>
+                        <I18nText uk={feature.uk} en={feature.en} />
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div
+      id="pricing-panel-video"
+      role="tabpanel"
+      aria-labelledby="pricing-tab-video"
+      data-pricing-panel="video"
+      class="hidden"
+      hidden
+    >
+      <p class="mb-3 text-[0.9rem] leading-snug text-muted sm:mb-4 sm:text-[0.95rem]">
+        <I18nText uk={uk.pricing.videoLead} en={en.pricing.videoLead} />
+      </p>
+
+      <ul class="divide-y divide-ink/10 border-y border-ink/10">
+        {
+          videoOffers.map((pkg) => (
+            <li>
+              <details class="pricing-pkg group">
+                <summary class="flex cursor-pointer list-none items-center gap-3 rounded-sm px-3 py-3.5 transition-colors hover:bg-ink/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:gap-4 sm:px-4 sm:py-4 [&::-webkit-details-marker]:hidden">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+                      <span class="font-display text-[1.65rem] leading-none tracking-wide sm:text-3xl">
+                        <I18nText uk={pkg.name.uk} en={pkg.name.en} />
+                      </span>
+                      <span class="text-sm text-muted">
+                        <I18nText uk={pkg.meta.uk} en={pkg.meta.en} />
+                      </span>
+                    </div>
+                    <p class="mt-1 text-[0.9rem] leading-snug text-muted sm:mt-1.5 sm:text-[0.95rem]">
+                      <I18nText uk={pkg.summary.uk} en={pkg.summary.en} />
+                    </p>
+                  </div>
+                  <div class="shrink-0 text-right">
+                    <p class="text-[1.05rem] font-medium tabular-nums tracking-wide sm:text-xl">
+                      <I18nText
+                        uk={formatUah(pkg.price, 'uk', { from: pkg.from, per: pkg.per })}
+                        en={formatUah(pkg.price, 'en', { from: pkg.from, per: pkg.per })}
+                      />
+                    </p>
+                    <span class="mt-1 inline-flex items-center gap-1 text-[0.65rem] tracking-[0.14em] uppercase text-muted transition group-hover:text-ink group-open:text-ink">
+                      <I18nText uk={uk.pricing.details} en={en.pricing.details} />
+                      <svg
+                        class="h-3 w-3 transition-transform group-open:rotate-180"
+                        viewBox="0 0 12 12"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M2.5 4.5 6 8l3.5-3.5"
+                          stroke="currentColor"
+                          stroke-width="1.4"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </div>
+                </summary>
+                <ul class="space-y-1.5 px-3 pb-3.5 text-[0.95rem] leading-snug text-ink/80 sm:px-4 sm:pb-4">
+                  {pkg.features.map((feature) => (
+                    <li class="flex gap-2.5">
+                      <span class="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-blush" aria-hidden="true" />
+                      <span>
+                        <I18nText uk={feature.uk} en={feature.en} />
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div
+      id="pricing-panel-rent"
+      role="tabpanel"
+      aria-labelledby="pricing-tab-rent"
+      data-pricing-panel="rent"
+      class="hidden"
+      hidden
+    >
+      <p class="text-[0.9rem] leading-snug text-muted sm:text-[0.95rem]">
+        <I18nText uk={hourly.lead.uk} en={hourly.lead.en} />
+      </p>
+
+      <p class="mt-4 font-display text-[2.75rem] leading-none tracking-wide sm:mt-5 sm:text-6xl">
+        <span class="i18n-uk">{hourly.price.toLocaleString('uk-UA')}</span>
+        <span class="i18n-en">{hourly.price.toLocaleString('en-US')}</span>
+        <span class="ml-1 text-[1.1rem] tracking-normal text-muted sm:text-2xl">
+          <I18nText uk={hourly.unit.uk} en={hourly.unit.en} />
+        </span>
+      </p>
+
+      <ul class="mt-4 space-y-2 border-t border-ink/10 pt-4 text-[0.95rem] leading-snug text-ink/80 sm:mt-5 sm:pt-5">
+        {
+          hourly.includes.map((item) => (
+            <li class="flex gap-2.5">
+              <span class="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-blush" aria-hidden="true" />
+              <span>
+                <I18nText uk={item.uk} en={item.en} />
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <p class="mt-5 text-[0.8rem] leading-snug text-muted sm:mt-6 sm:text-[0.85rem]">
+      <I18nText uk={uk.pricing.giftNote} en={en.pricing.giftNote} />
+    </p>
+    <a
+      href="#contact"
+      class="mt-3 inline-flex min-h-12 cursor-pointer items-center justify-center bg-ink px-6 py-3.5 text-center text-xs tracking-[0.16em] uppercase text-blush transition hover:bg-ink/90 hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:opacity-80 sm:mt-3.5 sm:min-h-0 sm:px-7 sm:py-3"
+    >
+      <I18nText uk={uk.pricing.ctaDiscuss} en={en.pricing.ctaDiscuss} />
+    </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .pricing-tab {
+    color: var(--color-muted);
+    border-bottom: 2px solid transparent;
+  }
+
+  .pricing-tab:hover {
+    color: var(--color-ink);
+  }
+
+  .pricing-tab[data-active='true'] {
+    color: var(--color-ink);
+    border-bottom-color: var(--color-ink);
+  }
+</style>
+
+<script>
+  const root = document.querySelector('[data-pricing]');
+  const scrollRoot = document.querySelector<HTMLElement>('[data-pricing-scroll]');
+  if (root) {
+    const tabs = [...root.querySelectorAll<HTMLElement>('[data-pricing-tab]')];
+    const panels = [...root.querySelectorAll<HTMLElement>('[data-pricing-panel]')];
+
+    function activate(id: string) {
+      tabs.forEach((tab) => {
+        const on = tab.dataset.pricingTab === id;
+        tab.dataset.active = String(on);
+        tab.setAttribute('aria-selected', String(on));
+        tab.tabIndex = on ? 0 : -1;
+      });
+      panels.forEach((panel) => {
+        const on = panel.dataset.pricingPanel === id;
+        panel.hidden = !on;
+        panel.classList.toggle('hidden', !on);
+      });
+      scrollRoot?.scrollTo({ top: 0 });
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const id = tab.dataset.pricingTab;
+        if (id) activate(id);
+      });
+    });
+
+    root.querySelector('[data-pricing-tabs]')?.addEventListener('keydown', (event) => {
+      const e = event as KeyboardEvent;
+      const current = tabs.findIndex((tab) => tab.dataset.active === 'true');
+      if (current < 0) return;
+      let next = current;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (current + 1) % tabs.length;
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (current - 1 + tabs.length) % tabs.length;
+      else if (e.key === 'Home') next = 0;
+      else if (e.key === 'End') next = tabs.length - 1;
+      else return;
+      e.preventDefault();
+      const id = tabs[next]?.dataset.pricingTab;
+      if (id) {
+        activate(id);
+        tabs[next]?.focus();
+      }
+    });
+  }
+</script>

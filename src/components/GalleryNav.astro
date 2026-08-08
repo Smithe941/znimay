@@ -1,0 +1,143 @@
+---
+interface GalleryLink {
+  id: string;
+  title: string;
+}
+
+interface Props {
+  galleries: GalleryLink[];
+  label: string;
+}
+
+const { galleries, label } = Astro.props;
+---
+
+{
+  galleries.length > 1 && (
+    <div
+      class="gallery-tabs sticky z-40 -mx-4 border-b border-ink/10 sm:-mx-6 md:-mx-8"
+      data-gallery-tabs
+    >
+      <div
+        class="scrollbar-none flex gap-1 overflow-x-auto px-4 py-3 sm:gap-2 sm:px-6 md:px-8"
+        role="tablist"
+        aria-label={label}
+      >
+        {galleries.map((gallery, index) => (
+          <button
+            type="button"
+            role="tab"
+            id={`${gallery.id}-tab`}
+            class="gallery-tabs__link cursor-pointer shrink-0 px-3 py-2 text-xs tracking-[0.16em] uppercase text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            data-gallery-tab={gallery.id}
+            data-active={index === 0 ? 'true' : 'false'}
+            aria-selected={index === 0 ? 'true' : 'false'}
+            aria-controls={gallery.id}
+            tabindex={index === 0 ? 0 : -1}
+          >
+            {gallery.title}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+<style>
+  .gallery-tabs__link[data-active='true'] {
+    color: var(--color-ink);
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+</style>
+
+<script>
+  const root = document.querySelector('[data-gallery-tabs]');
+  if (root) {
+    const tabs = [...root.querySelectorAll('[data-gallery-tab]')];
+    const panels = tabs
+      .map((tab) => {
+        const id = tab.getAttribute('data-gallery-tab');
+        return id ? document.getElementById(id) : null;
+      })
+      .filter(Boolean);
+
+    function loadPanelMedia(panel) {
+      if (!panel) return;
+      const gallery = panel.querySelector('[data-gallery]');
+      if (!gallery || gallery.getAttribute('data-gallery-loaded') === 'true') return;
+
+      const eagerCount = Number(gallery.getAttribute('data-eager-count') || 9);
+      gallery.querySelectorAll('img[data-src]').forEach((img, index) => {
+        const src = img.getAttribute('data-src');
+        if (src && !img.getAttribute('src')) {
+          img.setAttribute('src', src);
+          img.setAttribute('loading', index < eagerCount ? 'eager' : 'lazy');
+          if (index < 3) img.setAttribute('fetchpriority', 'high');
+        }
+      });
+      gallery.setAttribute('data-gallery-loaded', 'true');
+      gallery.dispatchEvent(new CustomEvent('znimay:gallery-media', { bubbles: true }));
+    }
+
+    function activate(id) {
+      for (const tab of tabs) {
+        const active = tab.getAttribute('data-gallery-tab') === id;
+        tab.setAttribute('data-active', active ? 'true' : 'false');
+        tab.setAttribute('aria-selected', active ? 'true' : 'false');
+        tab.tabIndex = active ? 0 : -1;
+        if (active) {
+          tab.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+        }
+      }
+
+      for (const panel of panels) {
+        const active = panel.id === id;
+        panel.hidden = !active;
+        panel.classList.toggle('hidden', !active);
+        if (active) loadPanelMedia(panel);
+      }
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const id = tab.getAttribute('data-gallery-tab');
+        if (id) activate(id);
+      });
+    });
+
+    root.addEventListener('keydown', (event) => {
+      if (!(event.target instanceof HTMLElement)) return;
+      if (!event.target.matches('[data-gallery-tab]')) return;
+
+      const current = tabs.indexOf(event.target);
+      if (current < 0) return;
+
+      let next = current;
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (current + 1) % tabs.length;
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowUp')
+        next = (current - 1 + tabs.length) % tabs.length;
+      if (event.key === 'Home') next = 0;
+      if (event.key === 'End') next = tabs.length - 1;
+
+      if (next !== current) {
+        event.preventDefault();
+        tabs[next].focus();
+        tabs[next].click();
+      }
+    });
+
+    // Ensure first panel media is marked loaded (SSR already set src)
+    const firstId = tabs[0]?.getAttribute('data-gallery-tab');
+    if (firstId) {
+      const firstPanel = document.getElementById(firstId);
+      loadPanelMedia(firstPanel);
+    }
+  }
+</script>
