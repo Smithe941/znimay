@@ -69,8 +69,8 @@ jobs:
           CLOUDINARY_BASE_FOLDER: ${{ vars.CLOUDINARY_BASE_FOLDER || 'znimay' }}
         run: |
           ${{ steps.detect-package-manager.outputs.runner }} astro build \
-            --site "${{ steps.pages.outputs.origin }}" \
-            --base "${{ steps.pages.outputs.base_path }}"
+            --site "https://znimay.art" \
+            --base "/"
         working-directory: ${{ env.BUILD_PATH }}
 
       - name: Upload artifact

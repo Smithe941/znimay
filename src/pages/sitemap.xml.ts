@@ -3,7 +3,7 @@ import { team } from '../data/team';
 import { withBase } from '../lib/paths';
 
 export const GET: APIRoute = ({ site }) => {
-  const origin = site ?? new URL('https://smithe941.github.io');
+  const origin = site ?? new URL('https://znimay.art');
   const paths = ['/', ...team.map((member) => `/port/${member.slug}/`)];
 
   const urls = paths

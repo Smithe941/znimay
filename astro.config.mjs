@@ -6,7 +6,7 @@ const base = process.env.PUBLIC_BASE_PATH || '/';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://smithe941.github.io',
+  site: 'https://znimay.art',
   base,
   trailingSlash: 'always',
   devToolbar: {

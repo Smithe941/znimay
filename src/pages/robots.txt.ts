@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { withBase } from '../lib/paths';
 
 export const GET: APIRoute = ({ site }) => {
-  const origin = site ?? new URL('https://smithe941.github.io');
+  const origin = site ?? new URL('https://znimay.art');
   const sitemap = new URL(withBase('/sitemap.xml'), origin).href;
   const body = `User-agent: *
 Allow: /

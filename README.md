@@ -42,8 +42,8 @@ npm run dev
 
 ## Деплой (GitHub Pages)
 
-Сайт: `https://smithe941.github.io/<repo>/`  
-`base` підставляє `actions/configure-pages` (зараз `/holy_father_port`, після ренейму репо — `/znimay`).
+Сайт: `https://znimay.art`  
+Кастомний домен на GitHub Pages → `base` = `/`.
 
 Workflow: `.github/workflows/deploy.yml`
 
