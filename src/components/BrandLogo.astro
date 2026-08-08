@@ -1,11 +1,9 @@
 ---
-import { t } from '../i18n/ui';
-import type { Lang } from '../i18n/config';
+import { ui } from '../i18n/ui';
 
 interface Props {
   class?: string;
   size?: 'nav' | 'hero' | 'footer';
-  lang?: Lang;
   /**
    * branded = blush on ink plate (default lockup)
    * bare = blush only, for dark full-bleed surfaces (hero)
@@ -13,8 +11,8 @@ interface Props {
   variant?: 'branded' | 'bare';
 }
 
-const { class: className = '', size = 'nav', lang = 'uk', variant = 'branded' } = Astro.props;
-const brand = t(lang).hero.brand;
+const { class: className = '', size = 'nav', variant = 'branded' } = Astro.props;
+const brand = ui.hero.brand;
 
 const sizeClass =
   size === 'hero'

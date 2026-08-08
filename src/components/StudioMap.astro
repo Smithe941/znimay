@@ -18,8 +18,7 @@ const googleKey = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
   data-lat={studioPlace.lat}
   data-lng={studioPlace.lng}
   data-maps-url={studioPlace.mapsUrl}
-  data-label-uk={`${studioPlace.streetUk}, ${studioPlace.cityUk}`}
-  data-label-en={`${studioPlace.streetEn}, ${studioPlace.cityEn}`}
+  data-label={`${studioPlace.street}, ${studioPlace.city}`}
 >
   <div
     class="studio-map__canvas absolute inset-0 bg-[#e8e4dc]"
@@ -91,9 +90,8 @@ const googleKey = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
     <circle cx="18" cy="18" r="5.5" fill="#252223"/>
   </svg>`;
 
-  function langLabel(root: HTMLElement) {
-    const lang = document.documentElement.getAttribute('data-lang') === 'en' ? 'en' : 'uk';
-    return lang === 'en' ? root.dataset.labelEn || '' : root.dataset.labelUk || '';
+  function mapLabel(root: HTMLElement) {
+    return root.dataset.label || '';
   }
 
   function canvasReady(canvas: HTMLElement) {
@@ -154,7 +152,7 @@ const googleKey = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
     const marker = new google.maps.Marker({
       position: center,
       map,
-      title: langLabel(root),
+      title: mapLabel(root),
       icon: {
         url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(PIN)}`,
         scaledSize: new google.maps.Size(36, 44),
@@ -163,7 +161,7 @@ const googleKey = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
     });
 
     const info = new google.maps.InfoWindow({
-      content: `<a href="${mapsUrl}" target="_blank" rel="noreferrer">${langLabel(root)}</a>`,
+      content: `<a href="${mapsUrl}" target="_blank" rel="noreferrer">${mapLabel(root)}</a>`,
     });
     marker.addListener('click', () => info.open({ map, anchor: marker }));
 
@@ -205,7 +203,7 @@ const googleKey = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
       }),
     })
       .addTo(map)
-      .bindPopup(`<a href="${mapsUrl}" target="_blank" rel="noreferrer">${langLabel(root)}</a>`);
+      .bindPopup(`<a href="${mapsUrl}" target="_blank" rel="noreferrer">${mapLabel(root)}</a>`);
 
     root._studioMap = map;
     requestAnimationFrame(() => map.invalidateSize());
@@ -253,6 +251,9 @@ const googleKey = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
 
     window.addEventListener('resize', tryInit);
     window.addEventListener('hashchange', tryInit);
+
+    const ro = new ResizeObserver(() => tryInit());
+    ro.observe(root);
   }
 
   watchStudioMap();

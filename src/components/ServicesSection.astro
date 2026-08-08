@@ -1,52 +1,50 @@
 ---
 import { t } from '../i18n/ui';
 import { serviceBlocks } from '../data/services';
-import I18nText from './I18nText.astro';
 
 const uk = t('uk');
-const en = t('en');
 ---
 
 <section
   id="services"
-  class="chapter chapter--ink snap-section flex flex-col px-4 pt-[max(5.25rem,calc(env(safe-area-inset-top)+4.5rem))] pb-[max(1rem,env(safe-area-inset-bottom))] text-blush-soft sm:px-6 sm:pt-20 md:h-[100svh] md:h-[100dvh] md:overflow-hidden md:px-8 md:pt-24"
+  class="chapter chapter--ink chapter-pad snap-section flex flex-col text-blush-soft md:h-[100svh] md:h-[100dvh] md:overflow-hidden"
 >
   <div class="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col">
     <div class="shrink-0 max-w-xl">
-      <h2 class="hidden font-display text-[2.35rem] leading-none text-blush sm:text-4xl md:block md:text-5xl">
-        <I18nText uk={uk.services.title} en={en.services.title} />
+      <h2 class="chapter-title text-blush max-md:sr-only">
+        {uk.services.title}
       </h2>
-      <p class="mt-2 text-[0.95rem] leading-relaxed text-blush-soft/75 sm:mt-3 sm:text-base max-md:mt-0">
-        <I18nText uk={uk.services.subtitle} en={en.services.subtitle} />
+      <p class="chapter-lede text-blush-soft/75 max-md:mt-0">
+        {uk.services.subtitle}
       </p>
     </div>
 
     <div
-      class="mt-6 min-h-0 md:flex-1 md:overflow-y-auto md:overscroll-y-auto sm:mt-8"
+      class="mt-4 min-h-0 md:flex-1 md:overflow-y-auto md:overscroll-y-auto sm:mt-6 md:mt-8"
       data-services-scroll
     >
-      <div class="space-y-12 pb-2 sm:space-y-14 md:space-y-16">
+      <div class="space-y-10 pb-2 sm:space-y-12 md:space-y-16">
         {
           serviceBlocks.map((block) => (
             <div>
               <div class="max-w-xl">
-                <h3 class="font-display text-[1.65rem] leading-none tracking-wide text-blush sm:text-3xl">
-                  <I18nText uk={block.title.uk} en={block.title.en} />
+                <h3 class="font-display text-[1.5rem] leading-none tracking-wide text-blush sm:text-3xl">
+                  {block.title}
                 </h3>
-                <p class="mt-2 text-[0.9rem] leading-relaxed text-blush-soft/65 sm:text-[0.95rem]">
-                  <I18nText uk={block.lead.uk} en={block.lead.en} />
+                <p class="mt-2 text-[0.875rem] leading-relaxed text-blush-soft/65 sm:text-[0.95rem]">
+                  {block.lead}
                 </p>
               </div>
 
               {block.items.length > 0 && (
-                <ul class="mt-6 divide-y divide-blush/15 border-y border-blush/15 sm:mt-7">
+                <ul class="mt-4 divide-y divide-blush/15 border-y border-blush/15 sm:mt-6">
                   {block.items.map((item) => (
-                    <li class="grid gap-2 py-5 sm:grid-cols-[minmax(0,0.38fr)_minmax(0,0.62fr)] sm:gap-8 sm:py-6 md:gap-12">
+                    <li class="grid gap-2 py-4 sm:grid-cols-[minmax(0,0.38fr)_minmax(0,0.62fr)] sm:gap-8 sm:py-5 md:gap-12">
                       <h4 class="font-display text-[1.25rem] leading-snug tracking-wide text-blush sm:text-[1.35rem]">
-                        <I18nText uk={item.title.uk} en={item.title.en} />
+                        {item.title}
                       </h4>
-                      <p class="text-[0.95rem] leading-relaxed text-blush-soft/80 sm:text-base">
-                        <I18nText uk={item.body.uk} en={item.body.en} />
+                      <p class="text-[0.875rem] leading-relaxed text-blush-soft/80 sm:text-base">
+                        {item.body}
                       </p>
                     </li>
                   ))}
@@ -57,12 +55,12 @@ const en = t('en');
         }
       </div>
 
-      <div class="pt-8 pb-2 sm:pt-10">
+      <div class="pt-8 pb-2 sm:pt-10 md:pt-12">
         <a
           href="#contact"
-          class="inline-flex min-h-12 cursor-pointer items-center justify-center border border-blush/40 px-6 py-3.5 text-center text-xs tracking-[0.16em] uppercase text-blush transition hover:border-blush hover:bg-blush/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/60 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:border-blush active:bg-blush/10 sm:min-h-0 sm:px-7 sm:py-3 sm:text-sm sm:tracking-[0.14em]"
+          class="inline-flex min-h-12 cursor-pointer items-center justify-center border border-blush/40 px-6 py-3.5 text-center text-xs tracking-[0.16em] uppercase text-blush transition hover:border-blush hover:bg-blush/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/60 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:border-blush active:bg-blush/10 sm:min-h-0 sm:px-7 sm:py-3 sm:text-sm"
         >
-          <I18nText uk={uk.services.cta} en={en.services.cta} />
+          {uk.services.cta}
         </a>
       </div>
     </div>

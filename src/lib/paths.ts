@@ -1,5 +1,3 @@
-import { defaultLang, type Lang } from '../i18n/config';
-
 const configuredBase = import.meta.env.BASE_URL || '/';
 
 /** Normalize Astro BASE_URL to a path without trailing slash (except root). */
@@ -16,16 +14,10 @@ export function withBase(path = '/') {
   return `${base}${normalized}`;
 }
 
-/** Site home — no language prefix in the URL. */
 export function homePath() {
   return withBase('/');
 }
 
 export function teamMemberPath(slug: string) {
   return withBase(`/port/${slug}/`);
-}
-
-/** @deprecated use homePath() */
-export function langHome(_lang: Lang = defaultLang) {
-  return homePath();
 }

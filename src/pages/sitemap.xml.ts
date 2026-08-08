@@ -4,12 +4,13 @@ import { withBase } from '../lib/paths';
 
 export const GET: APIRoute = ({ site }) => {
   const origin = site ?? new URL('https://znimay.art');
+  const lastmod = new Date().toISOString().slice(0, 10);
   const paths = ['/', ...team.map((member) => `/port/${member.slug}/`)];
 
   const urls = paths
     .map((path) => {
       const loc = new URL(withBase(path), origin).href;
-      return `  <url>\n    <loc>${loc}</loc>\n  </url>`;
+      return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`;
     })
     .join('\n');
 

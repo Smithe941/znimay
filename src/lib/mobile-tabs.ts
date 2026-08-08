@@ -202,6 +202,16 @@ export function initMobileTabs() {
     const tourLaunch = target.closest('[data-tour-launch]');
     if (tourLaunch instanceof HTMLElement) {
       event.preventDefault();
+      try {
+        const orientation = window.DeviceOrientationEvent as typeof DeviceOrientationEvent & {
+          requestPermission?: () => Promise<string>;
+        };
+        if (typeof orientation.requestPermission === 'function') {
+          void orientation.requestPermission();
+        }
+      } catch {
+        /* iOS gesture preflight — ignore */
+      }
       setActive('studio', { syncHash: true });
       window.setTimeout(() => {
         window.dispatchEvent(new CustomEvent('znimay:tour-open-request'));

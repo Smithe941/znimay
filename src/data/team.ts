@@ -1,49 +1,29 @@
-import type { Lang } from '../i18n/config';
-
 export type TeamMember = {
   slug: 'roman' | 'olena' | 'oleksandr';
   /** Cloudinary folder under znimay/team/ */
   folder: string;
-  name: Record<Lang, string>;
-  bio: Record<Lang, string>;
+  name: string;
+  bio: string;
 };
 
 export const team: TeamMember[] = [
   {
     slug: 'roman',
     folder: 'roman',
-    name: {
-      uk: 'Roman',
-      en: 'Roman',
-    },
-    bio: {
-      uk: 'Продакшн у кадрі: світло, ритм і історії для фото та відео.',
-      en: 'Production in frame: light, rhythm, and stories for photo and video.',
-    },
+    name: 'Roman',
+    bio: 'Продакшн у кадрі: світло, ритм і історії для фото та відео.',
   },
   {
     slug: 'olena',
     folder: 'olena',
-    name: {
-      uk: 'Olena',
-      en: 'Olena',
-    },
-    bio: {
-      uk: 'Мʼяка естетика й чиста композиція — атмосфера, в якій легко бути собою.',
-      en: 'Soft aesthetics and clean composition — an atmosphere where it’s easy to be yourself.',
-    },
+    name: 'Olena',
+    bio: 'Мʼяка естетика й чиста композиція — атмосфера, в якій легко бути собою.',
   },
   {
     slug: 'oleksandr',
     folder: 'alex',
-    name: {
-      uk: 'Oleksandr',
-      en: 'Oleksandr',
-    },
-    bio: {
-      uk: 'Між красою та зухвалістю — сміливі образи з характером.',
-      en: 'Between beauty and boldness — daring images with character.',
-    },
+    name: 'Oleksandr',
+    bio: 'Між красою та зухвалістю — сміливі образи з характером.',
   },
 ];
 

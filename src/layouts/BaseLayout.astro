@@ -1,21 +1,22 @@
 ---
 import '../styles/global.css';
-import type { Lang } from '../i18n/config';
-import { defaultLang } from '../i18n/config';
-import { t } from '../i18n/ui';
+import { ui } from '../i18n/ui';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { studioPlace } from '../data/contact';
+import { hourly } from '../data/pricing';
+
+type JsonLdNode = Record<string, unknown>;
 
 interface Props {
-  /** @deprecated Language is chosen client-side; kept for title fallbacks */
-  lang?: Lang;
-  title?: string | { uk: string; en: string };
-  description?: string | { uk: string; en: string };
+  title?: string;
+  description?: string;
   /** Absolute or site-relative path for Open Graph / Twitter image */
   ogImage?: string;
   /** When true, emit homepage LocalBusiness JSON-LD */
   structuredData?: boolean;
+  /** Extra schema.org nodes (Person, BreadcrumbList, …) */
+  extraJsonLd?: JsonLdNode | JsonLdNode[];
   swapLogoAfterHero?: boolean;
   /** Home page: enable mobile app-shell (tabs) without affecting desktop */
   mobileApp?: boolean;
@@ -24,61 +25,67 @@ interface Props {
 }
 
 const {
-  lang = defaultLang,
   title,
   description,
   ogImage,
   structuredData = false,
+  extraJsonLd,
   swapLogoAfterHero = false,
   mobileApp = false,
   galleryPage = false,
 } = Astro.props;
 
-const copyUk = t('uk');
-const copyEn = t('en');
-
-function pick(value: string | { uk: string; en: string } | undefined, which: Lang, fallback: string) {
-  if (!value) return fallback;
-  if (typeof value === 'string') return value;
-  return value[which];
-}
-
-const pageTitleUk = title
-  ? `${pick(title, 'uk', '')} · ${copyUk.meta.siteTitle}`
-  : copyUk.meta.siteTitle;
-const pageTitleEn = title
-  ? `${pick(title, 'en', typeof title === 'string' ? title : title.uk)} · ${copyEn.meta.siteTitle}`
-  : copyEn.meta.siteTitle;
-const pageDescriptionUk = pick(description, 'uk', copyUk.meta.siteDescription);
-const pageDescriptionEn = pick(description, 'en', copyEn.meta.siteDescription);
-
-const ogTitleUk = title ? pageTitleUk : copyUk.meta.ogTitle;
-const ogTitleEn = title ? pageTitleEn : copyEn.meta.ogTitle;
+const pageTitle = title ? `${title} · ${ui.meta.siteTitle}` : ui.meta.siteTitle;
+const pageDescription = description ?? ui.meta.siteDescription;
+const ogTitle = title ? pageTitle : ui.meta.ogTitle;
 
 const site = Astro.site ?? new URL('https://znimay.art');
 const canonical = new URL(Astro.url.pathname, site).href;
-const defaultOgPath = `${import.meta.env.BASE_URL}media/hero/KOS06571.jpg`.replace(/\/{2,}/g, '/');
+const defaultOgPath = `${import.meta.env.BASE_URL}og.jpg`.replace(/\/{2,}/g, '/');
 const ogImagePath = ogImage ?? defaultOgPath;
 const ogImageUrl = ogImagePath.startsWith('http')
   ? ogImagePath
   : new URL(ogImagePath, site).href;
+const isDefaultOg = !ogImage;
 
 const base = import.meta.env.BASE_URL;
 
-const jsonLd = structuredData
+const homeUrl = new URL(base, site).href;
+const extraNodes = extraJsonLd
+  ? Array.isArray(extraJsonLd)
+    ? extraJsonLd
+    : [extraJsonLd]
+  : [];
+
+const localBusiness: JsonLdNode | null = structuredData
   ? {
-      '@context': 'https://schema.org',
       '@type': ['LocalBusiness', 'PhotographyBusiness'],
       name: 'ЗНІМАЙ',
       alternateName: 'ZNIMAY',
-      description: copyUk.meta.siteDescription,
-      url: new URL(base, site).href,
+      description: ui.meta.siteDescription,
+      url: homeUrl,
       image: ogImageUrl,
+      priceRange: `від ${hourly.price} грн`,
+      openingHours: `Mo-Su ${studioPlace.opens}-${studioPlace.closes}`,
+      openingHoursSpecification: {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: [
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
+        ],
+        opens: studioPlace.opens,
+        closes: studioPlace.closes,
+      },
       address: {
         '@type': 'PostalAddress',
-        streetAddress: studioPlace.streetUk,
-        addressLocality: studioPlace.cityUk,
-        addressRegion: studioPlace.regionUk,
+        streetAddress: studioPlace.street,
+        addressLocality: studioPlace.city,
+        addressRegion: studioPlace.region,
         addressCountry: studioPlace.country,
       },
       geo: {
@@ -89,7 +96,7 @@ const jsonLd = structuredData
       hasMap: studioPlace.mapsUrl,
       areaServed: {
         '@type': 'City',
-        name: studioPlace.cityUk,
+        name: studioPlace.city,
       },
       sameAs: [
         'https://www.instagram.com/znimay_phstudio/',
@@ -123,12 +130,19 @@ const jsonLd = structuredData
       ],
     }
   : null;
+
+const jsonLdGraph = [...(localBusiness ? [localBusiness] : []), ...extraNodes];
+const jsonLd =
+  jsonLdGraph.length === 0
+    ? null
+    : jsonLdGraph.length === 1
+      ? { '@context': 'https://schema.org', ...jsonLdGraph[0] }
+      : { '@context': 'https://schema.org', '@graph': jsonLdGraph };
 ---
 
 <!doctype html>
 <html
-  lang={lang}
-  data-lang={lang}
+  lang="uk"
   data-mobile-app={mobileApp ? 'true' : undefined}
   data-gallery-page={galleryPage ? 'true' : undefined}
 >
@@ -173,92 +187,37 @@ const jsonLd = structuredData
         }
       })();
     </script>
-    <script is:inline>
-      (function () {
-        var KEY = 'znimay-lang';
-        var COOKIE = 'znimay_lang';
-        var lang = null;
-        try {
-          lang = localStorage.getItem(KEY);
-        } catch (e) {}
-        if (lang !== 'uk' && lang !== 'en') {
-          var match = document.cookie.match(/(?:^|; )znimay_lang=([^;]*)/);
-          var cookieLang = match ? decodeURIComponent(match[1]) : null;
-          if (cookieLang === 'uk' || cookieLang === 'en') lang = cookieLang;
-        }
-        if (lang !== 'uk' && lang !== 'en') lang = 'uk';
-        document.documentElement.lang = lang;
-        document.documentElement.setAttribute('data-lang', lang);
-      })();
-    </script>
-    <style is:inline>
-      html[data-lang='uk'] .i18n-en {
-        display: none !important;
-      }
-      html[data-lang='en'] .i18n-uk {
-        display: none !important;
-      }
-    </style>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta
-      name="description"
-      content={pageDescriptionUk}
-      data-desc-uk={pageDescriptionUk}
-      data-desc-en={pageDescriptionEn}
-    />
-    <meta
-      name="keywords"
-      content={copyUk.meta.keywords}
-      data-keywords-uk={copyUk.meta.keywords}
-      data-keywords-en={copyEn.meta.keywords}
-    />
+    <meta name="description" content={pageDescription} />
     <meta name="author" content="ЗНІМАЙ" />
     <meta name="geo.region" content="UA-71" />
-    <meta name="geo.placename" content="Cherkasy" />
+    <meta name="geo.placename" content={studioPlace.city} />
     <meta name="theme-color" content="#1a1214" />
     <meta name="generator" content={Astro.generator} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href={`${base}favicon.ico`} sizes="any" />
     <link rel="icon" type="image/png" href={`${base}favicon.png`} />
+    <link rel="apple-touch-icon" href={`${base}apple-touch-icon.png`} />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ЗНІМАЙ" />
     <meta property="og:url" content={canonical} />
-    <meta
-      property="og:title"
-      content={ogTitleUk}
-      data-og-title-uk={ogTitleUk}
-      data-og-title-en={ogTitleEn}
-    />
-    <meta
-      property="og:description"
-      content={pageDescriptionUk}
-      data-og-desc-uk={pageDescriptionUk}
-      data-og-desc-en={pageDescriptionEn}
-    />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={pageDescription} />
     <meta property="og:image" content={ogImageUrl} />
-    <meta property="og:image:alt" content={ogTitleUk} />
-    <meta
-      property="og:locale"
-      content={copyUk.meta.locale}
-      data-og-locale-uk={copyUk.meta.locale}
-      data-og-locale-en={copyEn.meta.locale}
-    />
-    <meta property="og:locale:alternate" content={copyEn.meta.locale} />
+    <meta property="og:image:alt" content={ogTitle} />
+    {isDefaultOg && (
+      <>
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/jpeg" />
+      </>
+    )}
+    <meta property="og:locale" content={ui.meta.locale} />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content={ogTitleUk}
-      data-tw-title-uk={ogTitleUk}
-      data-tw-title-en={ogTitleEn}
-    />
-    <meta
-      name="twitter:description"
-      content={pageDescriptionUk}
-      data-tw-desc-uk={pageDescriptionUk}
-      data-tw-desc-en={pageDescriptionEn}
-    />
+    <meta name="twitter:title" content={ogTitle} />
+    <meta name="twitter:description" content={pageDescription} />
     <meta name="twitter:image" content={ogImageUrl} />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -267,7 +226,7 @@ const jsonLd = structuredData
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap"
       rel="stylesheet"
     />
-    <title data-title-uk={pageTitleUk} data-title-en={pageTitleEn}>{pageTitleUk}</title>
+    <title>{pageTitle}</title>
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
   </head>
   <body class:list={['min-h-screen flex flex-col', mobileApp && 'has-mobile-app']}>
@@ -276,23 +235,6 @@ const jsonLd = structuredData
       <slot />
     </main>
     <Footer hideOnMobileApp={mobileApp} />
-    <script is:inline define:vars={{ pageTitleUk, pageTitleEn, pageDescriptionUk, pageDescriptionEn }}>
-      (function () {
-        var lang = document.documentElement.getAttribute('data-lang') || 'uk';
-        var title = lang === 'en' ? pageTitleEn : pageTitleUk;
-        var desc = lang === 'en' ? pageDescriptionEn : pageDescriptionUk;
-        document.title = title;
-        var meta = document.querySelector('meta[name="description"]');
-        if (meta) meta.setAttribute('content', desc);
-      })();
-    </script>
-    <script>
-      import { persistLang } from '../lib/lang-preference';
-      const htmlLang = document.documentElement.getAttribute('data-lang');
-      if (htmlLang === 'uk' || htmlLang === 'en') {
-        persistLang(htmlLang);
-      }
-    </script>
     <script>
       const observer = new IntersectionObserver(
         (entries) => {

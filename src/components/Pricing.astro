@@ -1,30 +1,28 @@
 ---
 import { t } from '../i18n/ui';
 import { packages, hourly, videoOffers, formatUah } from '../data/pricing';
-import I18nText from './I18nText.astro';
 
 const uk = t('uk');
-const en = t('en');
 
 const tabs = [
-  { id: 'shoot', uk: uk.pricing.tabShoot, en: en.pricing.tabShoot },
-  { id: 'video', uk: uk.pricing.tabVideo, en: en.pricing.tabVideo },
-  { id: 'rent', uk: uk.pricing.tabRent, en: en.pricing.tabRent },
+  { id: 'shoot', label: uk.pricing.tabShoot },
+  { id: 'video', label: uk.pricing.tabVideo },
+  { id: 'rent', label: uk.pricing.tabRent },
 ] as const;
 ---
 
 <section
   id="pricing"
-  class="chapter chapter--surface snap-section flex flex-col px-4 pt-[max(5.25rem,calc(env(safe-area-inset-top)+4.5rem))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-20 md:h-[100svh] md:h-[100dvh] md:overflow-hidden md:px-8 md:pt-24"
+  class="chapter chapter--surface chapter-pad snap-section flex flex-col md:h-[100svh] md:h-[100dvh] md:overflow-hidden"
 >
   <div class="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col" data-pricing>
     <div class="shrink-0">
-      <div class="mb-4 hidden max-w-xl sm:mb-5 md:mb-6 md:block">
-        <h2 class="font-display text-[2.35rem] leading-none sm:text-4xl md:text-5xl">
-          <I18nText uk={uk.pricing.title} en={en.pricing.title} />
+      <div class="mb-4 max-w-xl max-md:sr-only md:mb-8">
+        <h2 class="chapter-title">
+          {uk.pricing.title}
         </h2>
-        <p class="mt-2 text-[0.95rem] leading-snug text-muted sm:text-base sm:leading-relaxed">
-          <I18nText uk={uk.pricing.subtitle} en={en.pricing.subtitle} />
+        <p class="chapter-lede text-muted">
+          {uk.pricing.subtitle}
         </p>
       </div>
 
@@ -41,14 +39,14 @@ const tabs = [
                 type="button"
                 role="tab"
                 id={`pricing-tab-${tab.id}`}
-                class="pricing-tab flex-1 cursor-pointer py-3.5 text-center text-[0.7rem] tracking-[0.14em] uppercase transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:py-4 sm:text-xs sm:tracking-[0.16em]"
+                class="pricing-tab flex-1 cursor-pointer py-4 text-center text-[0.65rem] tracking-[0.16em] uppercase transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:text-xs"
                 aria-selected={index === 0 ? 'true' : 'false'}
                 aria-controls={`pricing-panel-${tab.id}`}
                 data-pricing-tab={tab.id}
                 data-active={index === 0 ? 'true' : 'false'}
                 tabindex={index === 0 ? 0 : -1}
               >
-                <I18nText uk={tab.uk} en={tab.en} />
+                {tab.label}
               </button>
             ))
           }
@@ -57,7 +55,7 @@ const tabs = [
     </div>
 
     <div
-      class="min-h-0 flex-1 overflow-y-auto overscroll-y-auto pt-3 sm:pt-4"
+      class="min-h-0 flex-1 overflow-y-auto overscroll-y-auto pt-4 sm:pt-6"
       data-pricing-scroll
     >
     <div
@@ -66,8 +64,8 @@ const tabs = [
       aria-labelledby="pricing-tab-shoot"
       data-pricing-panel="shoot"
     >
-      <p class="mb-3 text-[0.9rem] leading-snug text-muted sm:mb-4 sm:text-[0.95rem]">
-        <I18nText uk={uk.pricing.shootLead} en={en.pricing.shootLead} />
+      <p class="mb-4 text-[0.875rem] leading-snug text-muted sm:text-[0.95rem]">
+        {uk.pricing.shootLead}
       </p>
 
       <ul class="divide-y divide-ink/10 border-y border-ink/10">
@@ -82,19 +80,19 @@ const tabs = [
                         {pkg.name}
                       </span>
                       <span class="text-sm text-muted">
-                        <I18nText uk={pkg.duration.uk} en={pkg.duration.en} />
+                        {pkg.duration}
                       </span>
                     </div>
-                    <p class="mt-1 text-[0.9rem] leading-snug text-muted sm:mt-1.5 sm:text-[0.95rem]">
-                      <I18nText uk={pkg.summary.uk} en={pkg.summary.en} />
+                    <p class="mt-1 text-[0.875rem] leading-snug text-muted sm:mt-2 sm:text-[0.95rem]">
+                      {pkg.summary}
                     </p>
                   </div>
                   <div class="shrink-0 text-right">
                     <p class="text-[1.05rem] font-medium tabular-nums tracking-wide sm:text-xl">
-                      <I18nText uk={formatUah(pkg.price, 'uk')} en={formatUah(pkg.price, 'en')} />
+                      {formatUah(pkg.price)}
                     </p>
-                    <span class="mt-1 inline-flex items-center gap-1 text-[0.65rem] tracking-[0.14em] uppercase text-muted transition group-hover:text-ink group-open:text-ink">
-                      <I18nText uk={uk.pricing.details} en={en.pricing.details} />
+                    <span class="mt-1 inline-flex items-center gap-1 text-[0.65rem] tracking-[0.16em] uppercase text-muted transition group-hover:text-ink group-open:text-ink">
+                      {uk.pricing.details}
                       <svg
                         class="h-3 w-3 transition-transform group-open:rotate-180"
                         viewBox="0 0 12 12"
@@ -117,7 +115,7 @@ const tabs = [
                     <li class="flex gap-2.5">
                       <span class="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-blush" aria-hidden="true" />
                       <span>
-                        <I18nText uk={feature.uk} en={feature.en} />
+                        {feature}
                       </span>
                     </li>
                   ))}
@@ -137,8 +135,8 @@ const tabs = [
       class="hidden"
       hidden
     >
-      <p class="mb-3 text-[0.9rem] leading-snug text-muted sm:mb-4 sm:text-[0.95rem]">
-        <I18nText uk={uk.pricing.videoLead} en={en.pricing.videoLead} />
+      <p class="mb-4 text-[0.875rem] leading-snug text-muted sm:text-[0.95rem]">
+        {uk.pricing.videoLead}
       </p>
 
       <ul class="divide-y divide-ink/10 border-y border-ink/10">
@@ -150,25 +148,22 @@ const tabs = [
                   <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
                       <span class="font-display text-[1.65rem] leading-none tracking-wide sm:text-3xl">
-                        <I18nText uk={pkg.name.uk} en={pkg.name.en} />
+                        {pkg.name}
                       </span>
                       <span class="text-sm text-muted">
-                        <I18nText uk={pkg.meta.uk} en={pkg.meta.en} />
+                        {pkg.meta}
                       </span>
                     </div>
-                    <p class="mt-1 text-[0.9rem] leading-snug text-muted sm:mt-1.5 sm:text-[0.95rem]">
-                      <I18nText uk={pkg.summary.uk} en={pkg.summary.en} />
+                    <p class="mt-1 text-[0.875rem] leading-snug text-muted sm:mt-2 sm:text-[0.95rem]">
+                      {pkg.summary}
                     </p>
                   </div>
                   <div class="shrink-0 text-right">
                     <p class="text-[1.05rem] font-medium tabular-nums tracking-wide sm:text-xl">
-                      <I18nText
-                        uk={formatUah(pkg.price, 'uk', { from: pkg.from, per: pkg.per })}
-                        en={formatUah(pkg.price, 'en', { from: pkg.from, per: pkg.per })}
-                      />
+                      {formatUah(pkg.price, { from: pkg.from, per: pkg.per })}
                     </p>
-                    <span class="mt-1 inline-flex items-center gap-1 text-[0.65rem] tracking-[0.14em] uppercase text-muted transition group-hover:text-ink group-open:text-ink">
-                      <I18nText uk={uk.pricing.details} en={en.pricing.details} />
+                    <span class="mt-1 inline-flex items-center gap-1 text-[0.65rem] tracking-[0.16em] uppercase text-muted transition group-hover:text-ink group-open:text-ink">
+                      {uk.pricing.details}
                       <svg
                         class="h-3 w-3 transition-transform group-open:rotate-180"
                         viewBox="0 0 12 12"
@@ -191,7 +186,7 @@ const tabs = [
                     <li class="flex gap-2.5">
                       <span class="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-blush" aria-hidden="true" />
                       <span>
-                        <I18nText uk={feature.uk} en={feature.en} />
+                        {feature}
                       </span>
                     </li>
                   ))}
@@ -211,25 +206,24 @@ const tabs = [
       class="hidden"
       hidden
     >
-      <p class="text-[0.9rem] leading-snug text-muted sm:text-[0.95rem]">
-        <I18nText uk={hourly.lead.uk} en={hourly.lead.en} />
+      <p class="text-[0.875rem] leading-snug text-muted sm:text-[0.95rem]">
+        {hourly.lead}
       </p>
 
-      <p class="mt-4 font-display text-[2.75rem] leading-none tracking-wide sm:mt-5 sm:text-6xl">
-        <span class="i18n-uk">{hourly.price.toLocaleString('uk-UA')}</span>
-        <span class="i18n-en">{hourly.price.toLocaleString('en-US')}</span>
+      <p class="mt-4 font-display text-[3rem] leading-none tracking-wide sm:mt-6 sm:text-6xl">
+        {hourly.price.toLocaleString('uk-UA')}
         <span class="ml-1 text-[1.1rem] tracking-normal text-muted sm:text-2xl">
-          <I18nText uk={hourly.unit.uk} en={hourly.unit.en} />
+          {hourly.unit}
         </span>
       </p>
 
-      <ul class="mt-4 space-y-2 border-t border-ink/10 pt-4 text-[0.95rem] leading-snug text-ink/80 sm:mt-5 sm:pt-5">
+      <ul class="mt-4 space-y-2 border-t border-ink/10 pt-4 text-[0.95rem] leading-snug text-ink/80 sm:mt-6 sm:pt-6">
         {
           hourly.includes.map((item) => (
             <li class="flex gap-2.5">
               <span class="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-blush" aria-hidden="true" />
               <span>
-                <I18nText uk={item.uk} en={item.en} />
+                {item}
               </span>
             </li>
           ))
@@ -237,14 +231,14 @@ const tabs = [
       </ul>
     </div>
 
-    <p class="mt-5 text-[0.8rem] leading-snug text-muted sm:mt-6 sm:text-[0.85rem]">
-      <I18nText uk={uk.pricing.giftNote} en={en.pricing.giftNote} />
+    <p class="mt-6 text-[0.875rem] leading-snug text-muted">
+      {uk.pricing.giftNote}
     </p>
     <a
       href="#contact"
-      class="mt-3 inline-flex min-h-12 cursor-pointer items-center justify-center bg-ink px-6 py-3.5 text-center text-xs tracking-[0.16em] uppercase text-blush transition hover:bg-ink/90 hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:opacity-80 sm:mt-3.5 sm:min-h-0 sm:px-7 sm:py-3"
+      class="mt-4 inline-flex min-h-12 cursor-pointer items-center justify-center bg-ink px-6 py-3.5 text-center text-xs tracking-[0.16em] uppercase text-blush transition hover:bg-ink/90 hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:opacity-80 sm:min-h-0 sm:px-7 sm:py-3"
     >
-      <I18nText uk={uk.pricing.ctaDiscuss} en={en.pricing.ctaDiscuss} />
+      {uk.pricing.ctaDiscuss}
     </a>
     </div>
   </div>

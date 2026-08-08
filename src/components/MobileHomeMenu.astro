@@ -2,7 +2,6 @@
 import { t } from '../i18n/ui';
 import BrandLogo from './BrandLogo.astro';
 import HeroCarousel from './HeroCarousel.astro';
-import I18nText from './I18nText.astro';
 
 interface Props {
   images: string[];
@@ -10,12 +9,10 @@ interface Props {
 
 const { images } = Astro.props;
 const uk = t('uk');
-const en = t('en');
 
 const links = [
-  { tab: 'portfolio', hash: '#team', uk: uk.nav.team, en: en.nav.team },
-  { tab: 'studio', hash: '#studio', uk: uk.nav.studio, en: en.nav.studio },
-  { tab: 'offer', hash: '#pricing', uk: uk.nav.servicesAndPricing, en: en.nav.servicesAndPricing },
+  { tab: 'portfolio', hash: '#team', label: uk.nav.team },
+  { tab: 'offer', hash: '#pricing', label: uk.nav.servicesAndPricing },
 ] as const;
 ---
 
@@ -24,10 +21,10 @@ const links = [
     <HeroCarousel images={images} />
     <div class="mobile-home-menu__hero-copy">
       <h1 class="mobile-home-menu__brand">
-        <BrandLogo lang="uk" size="hero" variant="bare" />
+        <BrandLogo size="hero" variant="bare" />
       </h1>
       <p class="mobile-home-menu__tagline">
-        <I18nText uk={uk.hero.menuTagline} en={en.hero.menuTagline} />
+        {uk.hero.menuTagline}
       </p>
     </div>
   </div>
@@ -42,7 +39,7 @@ const links = [
             data-mobile-menu-link
             data-tab-target={link.tab}
           >
-            <I18nText uk={link.uk} en={link.en} />
+            {link.label}
             <span class="mobile-home-menu__chevron" aria-hidden="true">
               <svg viewBox="0 0 16 16" fill="none">
                 <path
@@ -66,10 +63,10 @@ const links = [
       >
         <span class="mobile-home-menu__tour-copy">
           <span class="mobile-home-menu__tour-label">
-            <I18nText uk={uk.studio.tabTour} en={en.studio.tabTour} />
+            {uk.studio.tabTour}
           </span>
           <span class="mobile-home-menu__tour-hint">
-            <I18nText uk={uk.studio.tabTourHint} en={en.studio.tabTourHint} />
+            {uk.studio.tabTourHint}
           </span>
         </span>
         <span class="mobile-home-menu__tour-orb" aria-hidden="true">
@@ -80,26 +77,26 @@ const links = [
 
     <div class="mobile-home-menu__social">
       <a
-        class="mobile-home-menu__social-link"
-        href="https://t.me/znimay_bot"
-        target="_blank"
-        rel="noreferrer"
-      >
-        <span class="mobile-home-menu__social-label">
-          <I18nText uk={uk.contact.telegramLabel} en={en.contact.telegramLabel} />
-        </span>
-        <span>@znimay_bot</span>
-      </a>
-      <a
-        class="mobile-home-menu__social-link"
+        class="mobile-home-menu__social-link mobile-home-menu__social-link--ig"
         href="https://www.instagram.com/znimay_phstudio/"
         target="_blank"
         rel="noreferrer"
       >
         <span class="mobile-home-menu__social-label">
-          <I18nText uk={uk.contact.instagramLabel} en={en.contact.instagramLabel} />
+          {uk.contact.instagramLabel}
         </span>
         <span>@znimay_phstudio</span>
+      </a>
+      <a
+        class="mobile-home-menu__social-link mobile-home-menu__social-link--tg"
+        href="https://t.me/znimay_bot"
+        target="_blank"
+        rel="noreferrer"
+      >
+        <span class="mobile-home-menu__social-label">
+          {uk.contact.telegramLabel}
+        </span>
+        <span>@znimay_bot</span>
       </a>
     </div>
   </div>

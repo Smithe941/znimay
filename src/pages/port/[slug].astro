@@ -3,7 +3,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Gallery from '../../components/Gallery.astro';
 import GalleryNav from '../../components/GalleryNav.astro';
 import TeamPortrait from '../../components/TeamPortrait.astro';
-import I18nText from '../../components/I18nText.astro';
 import { t } from '../../i18n/ui';
 import { team, getTeamMember, teamMonogram } from '../../data/team';
 import { homePath, teamMemberPath } from '../../lib/paths';
@@ -26,7 +25,6 @@ if (!member) {
 }
 
 const uk = t('uk');
-const en = t('en');
 const [hero, rawGalleries] = await Promise.all([
   fetchTeamHero(member.folder),
   fetchTeamGalleries(member.folder),
@@ -35,26 +33,70 @@ const [hero, rawGalleries] = await Promise.all([
 const galleries = rawGalleries.filter((gallery) => gallery.images.length > 0);
 const hasWork = galleries.length > 0;
 const heroUrl = hero ? imageUrl(hero.publicId, 'card') : null;
-const monogram = teamMonogram(member.name.uk);
+const monogram = teamMonogram(member.name);
 const others = team.filter((item) => item.slug !== member.slug);
 
 const galleryLinks = galleries.map((gallery) => ({
   id: `gallery-${member.slug}-${gallery.orderKey}-${gallery.slug}`,
   title: gallery.title,
 }));
+
+const site = Astro.site ?? new URL('https://znimay.art');
+const pageUrl = new URL(Astro.url.pathname, site).href;
+const homeUrl = new URL(import.meta.env.BASE_URL, site).href;
+
+const extraJsonLd = [
+  {
+    '@type': 'Person',
+    name: member.name,
+    description: member.bio,
+    url: pageUrl,
+    image: heroUrl || undefined,
+    jobTitle: uk.team.role,
+    worksFor: {
+      '@type': 'PhotographyBusiness',
+      name: 'ЗНІМАЙ',
+      url: homeUrl,
+    },
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: uk.hero.brand,
+        item: homeUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: uk.nav.team,
+        item: `${homeUrl}#team`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: member.name,
+        item: pageUrl,
+      },
+    ],
+  },
+];
 ---
 
 <BaseLayout
   title={member.name}
   description={member.bio}
   ogImage={heroUrl ?? undefined}
+  extraJsonLd={extraJsonLd}
   galleryPage
 >
-  <section class="mx-auto max-w-6xl px-4 pb-[max(5.5rem,calc(env(safe-area-inset-bottom)+4rem))] pt-[max(5.5rem,calc(env(safe-area-inset-top)+4rem))] sm:px-6 sm:pb-24 sm:pt-[max(5rem,calc(env(safe-area-inset-top)+3.75rem))] md:px-8">
-    <div class="reveal flex items-start gap-3 sm:gap-4 md:items-center md:gap-5">
+  <section class="chapter-pad chapter-pad--page mx-auto max-w-6xl">
+    <div class="reveal flex items-start gap-4 md:items-center md:gap-5">
       <TeamPortrait
         src={heroUrl}
-        alt={hero?.alt ?? member.name.uk}
+        alt={hero?.alt ?? member.name}
         monogram={monogram}
         class="aspect-[3/4] w-14 shrink-0 sm:w-16 md:w-20"
         loading="eager"
@@ -64,26 +106,26 @@ const galleryLinks = galleries.map((gallery) => ({
 
       <div class="min-w-0 flex-1">
         <a
-          href={homePath()}
+          href={`${homePath()}#team`}
           class="inline-flex cursor-pointer items-center text-[0.65rem] tracking-[0.16em] uppercase text-muted transition hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:text-xs"
         >
-          ← <I18nText uk={uk.portfolio.back} en={en.portfolio.back} />
+          ← {uk.portfolio.back}
         </a>
-        <h1 class="mt-1 font-display text-[1.85rem] leading-none tracking-wide sm:text-3xl md:text-4xl">
-          <I18nText uk={member.name.uk} en={member.name.en} />
+        <h1 class="mt-2 font-display text-[1.85rem] leading-none tracking-wide sm:text-3xl md:text-4xl">
+          {member.name}
         </h1>
-        <p class="mt-1.5 max-w-xl text-[0.85rem] leading-snug text-muted sm:mt-2 sm:text-[0.95rem] sm:leading-relaxed">
-          <I18nText uk={member.bio.uk} en={member.bio.en} />
+        <p class="chapter-lede max-w-xl text-muted">
+          {member.bio}
         </p>
       </div>
     </div>
 
     {
       hasWork ? (
-        <div class="mt-4 sm:mt-8">
+        <div class="mt-6 sm:mt-8 md:mt-10">
           <GalleryNav galleries={galleryLinks} label={uk.portfolio.galleriesNav} />
 
-          <div class="mt-3 sm:mt-8">
+          <div class="mt-4 sm:mt-6">
             {galleries.map((gallery, index) => {
               const id = galleryLinks[index].id;
               const active = index === 0;
@@ -109,7 +151,7 @@ const galleryLinks = galleries.map((gallery) => ({
           </div>
         </div>
       ) : (
-        <div class="reveal relative mt-10 overflow-hidden border-t border-ink/10 pt-8 sm:mt-12 sm:pt-10">
+        <div class="reveal relative mt-10 overflow-hidden border-t border-ink/10 pt-8 sm:mt-12 sm:pt-10 md:mt-16 md:pt-12">
           <div
             class="pointer-events-none absolute -right-8 top-4 select-none font-display text-[clamp(5rem,22vw,10rem)] leading-none text-blush/15"
             aria-hidden="true"
@@ -117,10 +159,10 @@ const galleryLinks = galleries.map((gallery) => ({
             {monogram}
           </div>
           <h2 class="relative font-display text-2xl sm:text-3xl md:text-4xl">
-            <I18nText uk={uk.portfolio.emptyTitle} en={en.portfolio.emptyTitle} />
+            {uk.portfolio.emptyTitle}
           </h2>
           <p class="relative mt-3 max-w-xl text-[0.95rem] leading-relaxed text-muted sm:mt-4 sm:text-base">
-            <I18nText uk={uk.portfolio.emptyBody} en={en.portfolio.emptyBody} />
+            {uk.portfolio.emptyBody}
           </p>
           <a
             href="https://www.instagram.com/znimay_phstudio/"
@@ -129,7 +171,7 @@ const galleryLinks = galleries.map((gallery) => ({
             class="relative mt-6 inline-flex min-h-11 cursor-pointer items-center gap-3 text-sm tracking-[0.14em] uppercase text-ink transition hover:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
           >
             <span>
-              <I18nText uk={uk.portfolio.emptyCta} en={en.portfolio.emptyCta} />
+              {uk.portfolio.emptyCta}
             </span>
             <span class="text-blush">@znimay_phstudio</span>
           </a>
@@ -139,9 +181,9 @@ const galleryLinks = galleries.map((gallery) => ({
 
     {
       others.length > 0 && (
-        <div class="reveal mt-14 border-t border-ink/10 pt-10 sm:mt-20 sm:pt-12">
+        <div class="reveal mt-12 border-t border-ink/10 pt-8 sm:mt-16 sm:pt-10 md:mt-20 md:pt-12">
           <p class="mb-5 text-xs tracking-[0.18em] uppercase text-muted">
-            <I18nText uk={uk.portfolio.otherMembers} en={en.portfolio.otherMembers} />
+            {uk.portfolio.otherMembers}
           </p>
           <ul class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-x-10 sm:gap-y-3">
             {others.map((item) => (
@@ -151,10 +193,10 @@ const galleryLinks = galleries.map((gallery) => ({
                   class="group inline-flex cursor-pointer items-baseline gap-3 font-display text-xl tracking-wide transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:text-2xl"
                 >
                   <span class="text-ink group-hover:text-muted">
-                    <I18nText uk={item.name.uk} en={item.name.en} />
+                    {item.name}
                   </span>
                   <span class="text-xs tracking-[0.16em] uppercase text-blush">
-                    <I18nText uk={uk.team.viewPortfolio} en={en.team.viewPortfolio} />
+                    {uk.team.viewPortfolio}
                   </span>
                 </a>
               </li>

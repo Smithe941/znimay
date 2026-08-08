@@ -3,7 +3,6 @@ import { t } from '../i18n/ui';
 import { homePath, teamMemberPath } from '../lib/paths';
 import { team } from '../data/team';
 import BrandLogo from './BrandLogo.astro';
-import I18nText from './I18nText.astro';
 
 interface Props {
   /** When true, nav logo stays hidden until hero brand scrolls out of view */
@@ -14,7 +13,6 @@ interface Props {
 
 const { swapLogoAfterHero = false, mobileApp = false } = Astro.props;
 const uk = t('uk');
-const en = t('en');
 ---
 
 <header
@@ -37,12 +35,12 @@ const en = t('en');
       aria-hidden={swapLogoAfterHero ? 'true' : undefined}
       tabindex={swapLogoAfterHero ? -1 : undefined}
     >
-      <BrandLogo lang="uk" size="nav" variant="bare" />
+      <BrandLogo size="nav" variant="bare" />
     </a>
 
     <nav
       class="desktop-nav hidden items-center gap-8 text-sm tracking-wide text-blush-soft/90 md:flex"
-      aria-label="Primary"
+      aria-label={uk.nav.primary}
       data-desktop-nav
     >
       <a
@@ -50,35 +48,35 @@ const en = t('en');
         href={`${homePath()}#team`}
         data-nav-section="team"
       >
-        <I18nText uk={uk.nav.team} en={en.nav.team} />
+        {uk.nav.team}
       </a>
       <a
         class="desktop-nav__link cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
         href={`${homePath()}#studio`}
         data-nav-section="studio"
       >
-        <I18nText uk={uk.nav.studio} en={en.nav.studio} />
+        {uk.nav.studio}
       </a>
       <a
         class="desktop-nav__link cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
         href={`${homePath()}#services`}
         data-nav-section="services"
       >
-        <I18nText uk={uk.nav.services} en={en.nav.services} />
+        {uk.nav.services}
       </a>
       <a
         class="desktop-nav__link cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
         href={`${homePath()}#pricing`}
         data-nav-section="pricing"
       >
-        <I18nText uk={uk.nav.pricing} en={en.nav.pricing} />
+        {uk.nav.pricing}
       </a>
       <a
         class="desktop-nav__link cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
         href={`${homePath()}#contact`}
         data-nav-section="contact"
       >
-        <I18nText uk={uk.nav.contact} en={en.nav.contact} />
+        {uk.nav.contact}
       </a>
     </nav>
 
@@ -119,10 +117,8 @@ const en = t('en');
             aria-expanded="false"
             aria-controls="mobile-nav"
             aria-label={uk.nav.home}
-            data-label-open-uk={uk.nav.home}
-            data-label-open-en={en.nav.home}
-            data-label-close-uk="Закрити"
-            data-label-close-en="Close"
+            data-label-open={uk.nav.home}
+            data-label-close="Закрити"
           >
             <span class="sr-only" data-nav-label>
               {uk.nav.home}
@@ -174,50 +170,50 @@ const en = t('en');
   hidden
   role="dialog"
   aria-modal="true"
-  aria-label="Menu"
+  aria-label={uk.nav.home}
 >
   <div
     class="flex h-full flex-col justify-between px-6 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[calc(4.5rem+env(safe-area-inset-top))]"
   >
-    <nav class="flex flex-col gap-1" aria-label="Mobile">
+    <nav class="flex flex-col gap-1" aria-label={uk.nav.mobile}>
       <a
         class="cursor-pointer border-b border-blush/15 py-5 font-display text-4xl text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70"
         href={`${homePath()}#team`}
         data-nav-link
       >
-        <I18nText uk={uk.nav.team} en={en.nav.team} />
+        {uk.nav.team}
       </a>
       <a
         class="cursor-pointer border-b border-blush/15 py-5 font-display text-4xl text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70"
         href={`${homePath()}#studio`}
         data-nav-link
       >
-        <I18nText uk={uk.nav.studio} en={en.nav.studio} />
+        {uk.nav.studio}
       </a>
       <a
         class="cursor-pointer border-b border-blush/15 py-5 font-display text-4xl text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70"
         href={`${homePath()}#services`}
         data-nav-link
       >
-        <I18nText uk={uk.nav.services} en={en.nav.services} />
+        {uk.nav.services}
       </a>
       <a
         class="cursor-pointer border-b border-blush/15 py-5 font-display text-4xl text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70"
         href={`${homePath()}#pricing`}
         data-nav-link
       >
-        <I18nText uk={uk.nav.pricing} en={en.nav.pricing} />
+        {uk.nav.pricing}
       </a>
       <a
         class="cursor-pointer border-b border-blush/15 py-5 font-display text-4xl text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:opacity-70"
         href={`${homePath()}#contact`}
         data-nav-link
       >
-        <I18nText uk={uk.nav.contact} en={en.nav.contact} />
+        {uk.nav.contact}
       </a>
 
       <p class="mt-10 text-xs tracking-[0.2em] uppercase text-blush-soft/50">
-        <I18nText uk={uk.nav.team} en={en.nav.team} />
+        {uk.nav.team}
       </p>
       <div class="mt-3 flex flex-col">
         {
@@ -227,7 +223,7 @@ const en = t('en');
               href={teamMemberPath(member.slug)}
               data-nav-link
             >
-              <I18nText uk={member.name.uk} en={member.name.en} />
+              {member.name}
             </a>
           ))
         }
@@ -274,8 +270,8 @@ const en = t('en');
 
   function menuLabels() {
     return {
-      open: toggle?.getAttribute('data-label-open-uk') || 'Меню',
-      close: toggle?.getAttribute('data-label-close-uk') || 'Закрити',
+      open: toggle?.getAttribute('data-label-open') || 'Меню',
+      close: toggle?.getAttribute('data-label-close') || 'Закрити',
     };
   }
 

@@ -1,53 +1,21 @@
 ---
 import { t } from '../i18n/ui';
-import I18nText from './I18nText.astro';
 
 const uk = t('uk');
-const en = t('en');
 
 const tabs = [
-  {
-    id: 'home',
-    hash: '#',
-    uk: uk.nav.home,
-    en: en.nav.home,
-    icon: 'home',
-  },
-  {
-    id: 'portfolio',
-    hash: '#team',
-    uk: uk.nav.team,
-    en: en.nav.team,
-    icon: 'portfolio',
-  },
-  {
-    id: 'studio',
-    hash: '#studio',
-    uk: uk.nav.studio,
-    en: en.nav.studio,
-    icon: 'studio',
-  },
-  {
-    id: 'offer',
-    hash: '#pricing',
-    uk: uk.nav.servicesAndPricing,
-    en: en.nav.servicesAndPricing,
-    icon: 'offer',
-  },
-  {
-    id: 'contact',
-    hash: '#contact',
-    uk: uk.nav.contact,
-    en: en.nav.contact,
-    icon: 'contact',
-  },
+  { id: 'home', hash: '#', label: uk.nav.home, icon: 'home' },
+  { id: 'portfolio', hash: '#team', label: uk.nav.team, icon: 'portfolio' },
+  { id: 'studio', hash: '#studio', label: uk.nav.studio, icon: 'studio' },
+  { id: 'offer', hash: '#pricing', label: uk.nav.servicesAndPricing, icon: 'offer' },
+  { id: 'contact', hash: '#contact', label: uk.nav.contact, icon: 'contact' },
 ] as const;
 ---
 
 <nav
   class="mobile-tabbar md:hidden"
   data-mobile-tabbar
-  aria-label="Primary"
+  aria-label={uk.nav.primary}
 >
   <div class="mobile-tabbar__inner" role="tablist">
     {
@@ -104,7 +72,7 @@ const tabs = [
             )}
           </span>
           <span class="mobile-tabbar__label">
-            <I18nText uk={tab.uk} en={tab.en} />
+            {tab.label}
           </span>
         </button>
       ))

@@ -18,7 +18,6 @@ interface Props {
 
 const { images, emptyLabel, columns = 3, id = 'gallery', loadMedia = true } = Astro.props;
 const uk = t('uk');
-const en = t('en');
 const lightboxId = `${id}-lightbox`;
 const imageId = `${id}-lightbox-image`;
 const videoId = `${id}-lightbox-video`;
@@ -113,8 +112,6 @@ const gridClass =
       class="absolute right-[max(0.75rem,env(safe-area-inset-right))] top-[max(0.75rem,env(safe-area-inset-top))] z-20 flex h-11 w-11 cursor-pointer items-center justify-center text-xs tracking-widest text-blush transition hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush active:opacity-70"
       data-lightbox-close
       aria-label={uk.portfolio.lightboxClose}
-      data-label-uk={uk.portfolio.lightboxClose}
-      data-label-en={en.portfolio.lightboxClose}
     >
       ✕
     </button>
@@ -124,8 +121,6 @@ const gridClass =
       class="absolute left-[max(0.5rem,env(safe-area-inset-left))] top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center border border-blush/35 text-blush transition hover:border-blush hover:bg-blush/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush active:opacity-70 md:flex sm:left-[max(1rem,env(safe-area-inset-left))] sm:h-14 sm:w-14"
       data-lightbox-prev
       aria-label={uk.portfolio.lightboxPrev}
-      data-label-uk={uk.portfolio.lightboxPrev}
-      data-label-en={en.portfolio.lightboxPrev}
     >
       <svg class="size-5" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path
@@ -143,8 +138,6 @@ const gridClass =
       class="absolute right-[max(0.5rem,env(safe-area-inset-right))] top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center border border-blush/35 text-blush transition hover:border-blush hover:bg-blush/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush active:opacity-70 md:flex sm:right-[max(1rem,env(safe-area-inset-right))] sm:h-14 sm:w-14"
       data-lightbox-next
       aria-label={uk.portfolio.lightboxNext}
-      data-label-uk={uk.portfolio.lightboxNext}
-      data-label-en={en.portfolio.lightboxNext}
     >
       <svg class="size-5" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path
@@ -236,15 +229,6 @@ const gridClass =
     video.style.setProperty('--lightbox-ar', `${w} / ${h}`);
   }
 
-  function syncNavLabels() {
-    const lang = document.documentElement.getAttribute('data-lang') === 'en' ? 'en' : 'uk';
-    for (const btn of [closeBtn, prevBtn, nextBtn]) {
-      if (!(btn instanceof HTMLElement)) continue;
-      const label = btn.getAttribute(`data-label-${lang}`);
-      if (label) btn.setAttribute('aria-label', label);
-    }
-  }
-
   function updateNavVisibility() {
     const multi = items.length > 1;
     for (const btn of [prevBtn, nextBtn]) {
@@ -297,7 +281,6 @@ const gridClass =
 
   function openLightbox(index) {
     if (!dialog) return;
-    syncNavLabels();
     updateNavVisibility();
     dialog.showModal();
     document.body.classList.add('lightbox-open');
@@ -441,8 +424,6 @@ const gridClass =
       closeLightbox();
     }
   });
-
-  window.addEventListener('znimay:lang', syncNavLabels);
 
   // Native lazy often waits until a tile is well inside the viewport, so a
   // barely-visible next row stays blank. Promote those images early.

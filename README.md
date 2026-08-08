@@ -7,7 +7,7 @@
 - Astro (static)
 - Tailwind CSS 4
 - Cloudinary
-- UA / EN (мова в `localStorage` + cookie)
+- Українська
 
 ## Локальний запуск
 
@@ -33,12 +33,6 @@ npm run dev
 ```
 
 Сайт: `http://localhost:4321/`
-
-## Мова
-
-- Маршрути: `/uk/…`, `/en/…`
-- Корінь `/` читає `localStorage` (`znimay-lang`) або cookie (`znimay_lang`) і редіректить
-- Перемикач мови оновлює обидва сховища
 
 ## Деплой (GitHub Pages)
 

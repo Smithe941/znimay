@@ -1,5 +1,3 @@
-import type { Lang } from '../i18n/config';
-
 export type TourRoomId = 'entrance' | 'room_1' | 'dressing';
 
 export type TourNodeId =
@@ -19,7 +17,7 @@ export type TourLink = {
   nodeId: TourNodeId;
   kind: TourLinkKind;
   position: { yaw: string; pitch: string };
-  name: Record<Lang, string>;
+  name: string;
   /** Direction cue on wall plaques */
   arrow?: TourPlaqueArrow;
 };
@@ -29,7 +27,7 @@ export type TourNode = {
   room: TourRoomId;
   /** Low-res path under public/media/ — used for instant hops */
   panorama: string;
-  name: Record<Lang, string>;
+  name: string;
   /** Initial camera look when entering this node */
   view: { yaw: string; pitch: string };
   /** Rotate the panorama on the sphere (e.g. pan: '180deg') */
@@ -37,7 +35,7 @@ export type TourNode = {
   links: TourLink[];
 };
 
-/** HQ companion for a LQ tour panorama (`3d/x.JPG` → `3d/hq/x.JPG`) */
+/** HQ companion for a LQ tour panorama (`3d/x.JPG` → `3d/hq/x.JPG`, ~8K). */
 export function panoramaHqPath(panorama: string): string {
   return panorama.replace(/^3d\//, '3d/hq/');
 }
@@ -45,40 +43,31 @@ export function panoramaHqPath(panorama: string): string {
 export const tourRooms: {
   id: TourRoomId;
   startNodeId: TourNodeId;
-  label: Record<Lang, string>;
+  label: string;
   /** Still preview for Locations tab fallback */
   preview: string;
-  blurb: Record<Lang, string>;
+  blurb: string;
 }[] = [
   {
     id: 'room_1',
     startNodeId: 'room_1_4',
-    label: { uk: 'Фотостудія', en: 'Photo studio' },
+    label: 'Фотостудія',
     preview: '3d/hq/room_1_4.JPG',
-    blurb: {
-      uk: 'Велика фотостудія із зонами: циклорама, сети й пілон.',
-      en: 'A large photo studio with zones: cyclorama, sets, and a pole.',
-    },
+    blurb: 'Велика фотостудія із зонами: циклорама, сети й пілон.',
   },
   {
     id: 'entrance',
     startNodeId: 'entrance',
-    label: { uk: 'Вхід', en: 'Entrance' },
+    label: 'Вхід',
     preview: '3d/hq/enterance.JPG',
-    blurb: {
-      uk: 'Хол студії — звідси заходите у фотостудію.',
-      en: 'Studio lobby — from here you enter the photo studio.',
-    },
+    blurb: 'Хол студії — звідси заходите у фотостудію.',
   },
   {
     id: 'dressing',
     startNodeId: 'dressing',
-    label: { uk: 'Гримерка', en: 'Dressing' },
+    label: 'Гримерка',
     preview: '3d/hq/dressing.JPG',
-    blurb: {
-      uk: 'Гримерка з дзеркалом, одягом і місцем підготуватися до зйомки.',
-      en: 'Dressing room with a mirror, wardrobe, and space to get ready.',
-    },
+    blurb: 'Гримерка з дзеркалом, одягом і місцем підготуватися до зйомки.',
   },
 ];
 
@@ -101,14 +90,14 @@ export const tourNodes: TourNode[] = [
     id: 'entrance',
     room: 'entrance',
     panorama: '3d/enterance.JPG',
-    name: { uk: 'Вхід', en: 'Entrance' },
+    name: 'Вхід',
     view: { yaw: '0deg', pitch: '-15deg' },
     links: [
       {
         nodeId: 'room_1_1',
         kind: 'wall',
         position: { yaw: '-15deg', pitch: '-45deg' },
-        name: { uk: 'Фотостудія', en: 'Photo studio' },
+        name: 'Фотостудія',
         arrow: 'down',
       },
     ],
@@ -117,7 +106,7 @@ export const tourNodes: TourNode[] = [
     id: 'room_1_1',
     room: 'room_1',
     panorama: '3d/room_1_1.JPG',
-    name: { uk: 'Фотостудія', en: 'Photo studio' },
+    name: 'Фотостудія',
     view: { yaw: '0deg', pitch: '0deg' },
     sphereCorrection: { pan: '267deg' },
     links: [
@@ -125,7 +114,7 @@ export const tourNodes: TourNode[] = [
         nodeId: 'room_1_2',
         kind: 'forward',
         position: { yaw: '-177deg', pitch: '-55deg' },
-        name: { uk: 'Далі', en: 'Further' },
+        name: 'Далі',
       },
     ],
   },
@@ -133,7 +122,7 @@ export const tourNodes: TourNode[] = [
     id: 'room_1_2',
     room: 'room_1',
     panorama: '3d/room_1_2.JPG',
-    name: { uk: 'Фотостудія', en: 'Photo studio' },
+    name: 'Фотостудія',
     view: { yaw: '0deg', pitch: '0deg' },
     sphereCorrection: { pan: '269deg' },
     links: [
@@ -141,13 +130,13 @@ export const tourNodes: TourNode[] = [
         nodeId: 'room_1_1',
         kind: 'forward',
         position: { yaw: '1deg', pitch: '-55deg' },
-        name: { uk: 'Назад', en: 'Back' },
+        name: 'Назад',
       },
       {
         nodeId: 'room_1_3',
         kind: 'forward',
         position: { yaw: '-179deg', pitch: '-55deg' },
-        name: { uk: 'Далі', en: 'Further' },
+        name: 'Далі',
       },
     ],
   },
@@ -155,7 +144,7 @@ export const tourNodes: TourNode[] = [
     id: 'room_1_3',
     room: 'room_1',
     panorama: '3d/room_1_3.JPG',
-    name: { uk: 'Фотостудія', en: 'Photo studio' },
+    name: 'Фотостудія',
     view: { yaw: '0deg', pitch: '0deg' },
     sphereCorrection: { pan: '267deg', tilt: '-2deg' },
     links: [
@@ -163,13 +152,13 @@ export const tourNodes: TourNode[] = [
         nodeId: 'room_1_2',
         kind: 'forward',
         position: { yaw: '-7deg', pitch: '-53deg' },
-        name: { uk: 'Назад', en: 'Back' },
+        name: 'Назад',
       },
       {
         nodeId: 'room_1_4',
         kind: 'forward',
         position: { yaw: '173deg', pitch: '-53deg' },
-        name: { uk: 'Далі', en: 'Further' },
+        name: 'Далі',
       },
     ],
   },
@@ -177,7 +166,7 @@ export const tourNodes: TourNode[] = [
     id: 'room_1_4',
     room: 'room_1',
     panorama: '3d/room_1_4.JPG',
-    name: { uk: 'Фотостудія', en: 'Photo studio' },
+    name: 'Фотостудія',
     /** Opening pose only — transitions keep the previous camera (Street View style) */
     view: { yaw: '30deg', pitch: '0deg' },
     sphereCorrection: { pan: '274deg' },
@@ -186,13 +175,13 @@ export const tourNodes: TourNode[] = [
         nodeId: 'room_1_3',
         kind: 'forward',
         position: { yaw: '-4deg', pitch: '-55deg' },
-        name: { uk: 'Назад', en: 'Back' },
+        name: 'Назад',
       },
       {
         nodeId: 'dressing',
         kind: 'wall',
         position: { yaw: '86deg', pitch: '0deg' },
-        name: { uk: 'Гримерка', en: 'Dressing' },
+        name: 'Гримерка',
         arrow: 'up',
       },
     ],
@@ -201,14 +190,14 @@ export const tourNodes: TourNode[] = [
     id: 'dressing',
     room: 'dressing',
     panorama: '3d/dressing.JPG',
-    name: { uk: 'Гримерка', en: 'Dressing' },
+    name: 'Гримерка',
     view: { yaw: '0deg', pitch: '0deg' },
     links: [
       {
         nodeId: 'room_1_4',
         kind: 'wall',
         position: { yaw: '322deg', pitch: '0deg' },
-        name: { uk: 'Фотостудія', en: 'Photo studio' },
+        name: 'Фотостудія',
         arrow: 'up',
       },
     ],
