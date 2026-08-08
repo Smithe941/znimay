@@ -37,7 +37,7 @@ function isSwipeBlockedTarget(target: EventTarget | null) {
   if (!(target instanceof Element)) return false;
   return Boolean(
     target.closest(
-      '[data-locations-track], .psv-container, .psv-canvas-container, [data-tour-modal], input, textarea, select',
+      '[data-locations-track], [data-studio-map], .psv-container, .psv-canvas-container, [data-tour-modal], input, textarea, select, iframe',
     ),
   );
 }
@@ -198,6 +198,17 @@ export function initMobileTabs() {
     if (!isMobileShell()) return;
     const target = event.target;
     if (!(target instanceof Element)) return;
+
+    const tourLaunch = target.closest('[data-tour-launch]');
+    if (tourLaunch instanceof HTMLElement) {
+      event.preventDefault();
+      setActive('studio', { syncHash: true });
+      window.setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('znimay:tour-open-request'));
+      }, 60);
+      return;
+    }
+
     const link = target.closest('a[href^="#"]');
     if (!(link instanceof HTMLAnchorElement)) return;
     const hash = link.getAttribute('href') || '';

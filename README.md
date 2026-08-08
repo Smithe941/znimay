@@ -52,7 +52,8 @@ Secrets:
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
 
-Optional variable:
+Optional variables:
 - `CLOUDINARY_BASE_FOLDER` (default `znimay`)
+- `PUBLIC_GOOGLE_MAPS_API_KEY` — dark Google Map in Contacts (Maps JavaScript API)
 
 У Settings → Pages виберіть Source: **GitHub Actions**.

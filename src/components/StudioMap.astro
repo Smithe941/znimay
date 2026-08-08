@@ -1,0 +1,259 @@
+---
+import 'leaflet/dist/leaflet.css';
+import { studioPlace } from '../data/contact';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+const googleKey = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
+---
+
+<div
+  class="studio-map relative h-56 w-full overflow-hidden border border-blush/25 sm:h-64 md:h-72"
+  data-studio-map
+  data-provider={googleKey ? 'google' : 'osm'}
+  data-google-key={googleKey}
+  data-lat={studioPlace.lat}
+  data-lng={studioPlace.lng}
+  data-maps-url={studioPlace.mapsUrl}
+  data-label-uk={`${studioPlace.streetUk}, ${studioPlace.cityUk}`}
+  data-label-en={`${studioPlace.streetEn}, ${studioPlace.cityEn}`}
+>
+  <div
+    class="studio-map__canvas absolute inset-0 bg-[#e8e4dc]"
+    data-studio-map-canvas
+    role="img"
+    aria-label={title}
+  >
+  </div>
+</div>
+
+<style is:global>
+  .studio-map {
+    isolation: isolate;
+    color-scheme: light;
+  }
+
+  .studio-map__canvas {
+    height: 100%;
+    width: 100%;
+  }
+
+  .studio-map .leaflet-container,
+  .studio-map .gm-style {
+    height: 100%;
+    width: 100%;
+    background: #e8e4dc;
+    font-family: inherit;
+    z-index: 0;
+  }
+
+  .studio-map .leaflet-control-attribution {
+    background: color-mix(in srgb, var(--color-ink) 82%, transparent);
+    color: color-mix(in srgb, var(--color-blush-soft) 55%, transparent);
+    font-size: 0.62rem;
+    max-width: 75%;
+  }
+
+  .studio-map .leaflet-control-attribution a {
+    color: var(--color-blush-soft);
+  }
+
+  .studio-map .leaflet-bar a {
+    background: color-mix(in srgb, var(--color-ink) 88%, transparent);
+    border-color: color-mix(in srgb, var(--color-blush) 22%, transparent);
+    color: var(--color-blush);
+  }
+
+  .studio-map .leaflet-bar a:hover {
+    background: var(--color-ink);
+    color: var(--color-blush-soft);
+  }
+
+  .studio-map__pin {
+    background: none;
+    border: 0;
+  }
+</style>
+
+<script>
+  import L from 'leaflet';
+
+  type MapHost = HTMLElement & {
+    _studioMap?: L.Map | google.maps.Map;
+    _studioCenter?: google.maps.LatLngLiteral;
+  };
+
+  const PIN = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="44" viewBox="0 0 36 44" fill="none" aria-hidden="true">
+    <path d="M18 43s14-11.2 14-23a14 14 0 1 0-28 0c0 11.8 14 23 14 23Z" fill="#dfb4c4"/>
+    <circle cx="18" cy="18" r="5.5" fill="#252223"/>
+  </svg>`;
+
+  function langLabel(root: HTMLElement) {
+    const lang = document.documentElement.getAttribute('data-lang') === 'en' ? 'en' : 'uk';
+    return lang === 'en' ? root.dataset.labelEn || '' : root.dataset.labelUk || '';
+  }
+
+  function canvasReady(canvas: HTMLElement) {
+    return canvas.clientWidth >= 8 && canvas.clientHeight >= 8;
+  }
+
+  function loadGoogleSdk(key: string) {
+    const g = window as typeof window & {
+      google?: { maps?: { importLibrary?: (name: string) => Promise<unknown> } };
+    };
+    if (g.google?.maps?.importLibrary) return Promise.resolve();
+
+    return new Promise<void>((resolve, reject) => {
+      const existing = document.querySelector<HTMLScriptElement>('script[data-google-maps-sdk]');
+      if (existing) {
+        existing.addEventListener('load', () => resolve(), { once: true });
+        existing.addEventListener('error', () => reject(new Error('Google Maps SDK failed')), { once: true });
+        return;
+      }
+      const script = document.createElement('script');
+      script.dataset.googleMapsSdk = '';
+      script.async = true;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&v=weekly&loading=async`;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Google Maps SDK failed'));
+      document.head.appendChild(script);
+    });
+  }
+
+  async function initGoogleMap(root: MapHost, canvas: HTMLElement) {
+    const key = root.dataset.googleKey || '';
+    const lat = Number(root.dataset.lat);
+    const lng = Number(root.dataset.lng);
+    const mapsUrl = root.dataset.mapsUrl || '#';
+    if (!key || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+    if (root._studioMap && !(root._studioMap instanceof L.Map)) {
+      google.maps.event.trigger(root._studioMap, 'resize');
+      if (root._studioCenter) root._studioMap.setCenter(root._studioCenter);
+      return;
+    }
+
+    await loadGoogleSdk(key);
+    const { Map } = (await google.maps.importLibrary('maps')) as google.maps.MapsLibrary;
+    const { ColorScheme } = (await google.maps.importLibrary('core')) as google.maps.CoreLibrary;
+
+    const center = { lat, lng };
+    const map = new Map(canvas, {
+      center,
+      zoom: 16,
+      colorScheme: ColorScheme.LIGHT,
+      disableDefaultUI: true,
+      zoomControl: true,
+      gestureHandling: 'cooperative',
+      keyboardShortcuts: false,
+    });
+
+    const marker = new google.maps.Marker({
+      position: center,
+      map,
+      title: langLabel(root),
+      icon: {
+        url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(PIN)}`,
+        scaledSize: new google.maps.Size(36, 44),
+        anchor: new google.maps.Point(18, 44),
+      },
+    });
+
+    const info = new google.maps.InfoWindow({
+      content: `<a href="${mapsUrl}" target="_blank" rel="noreferrer">${langLabel(root)}</a>`,
+    });
+    marker.addListener('click', () => info.open({ map, anchor: marker }));
+
+    root._studioMap = map;
+    root._studioCenter = center;
+    google.maps.event.trigger(map, 'resize');
+    map.setCenter(center);
+  }
+
+  function initLeafletMap(root: MapHost, canvas: HTMLElement) {
+    if (root._studioMap instanceof L.Map) {
+      root._studioMap.invalidateSize();
+      return;
+    }
+
+    const lat = Number(root.dataset.lat);
+    const lng = Number(root.dataset.lng);
+    const mapsUrl = root.dataset.mapsUrl || '#';
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+    const map = L.map(canvas, {
+      scrollWheelZoom: false,
+      attributionControl: true,
+    }).setView([lat, lng], 16);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noreferrer">CARTO</a>',
+      maxZoom: 20,
+    }).addTo(map);
+
+    L.marker([lat, lng], {
+      icon: L.divIcon({
+        className: 'studio-map__pin',
+        html: PIN,
+        iconSize: [36, 44],
+        iconAnchor: [18, 44],
+        popupAnchor: [0, -40],
+      }),
+    })
+      .addTo(map)
+      .bindPopup(`<a href="${mapsUrl}" target="_blank" rel="noreferrer">${langLabel(root)}</a>`);
+
+    root._studioMap = map;
+    requestAnimationFrame(() => map.invalidateSize());
+  }
+
+  async function initStudioMap(root: MapHost) {
+    const canvas = root.querySelector<HTMLElement>('[data-studio-map-canvas]');
+    if (!canvas || !canvasReady(canvas)) return;
+
+    if (root.dataset.provider === 'google' && root.dataset.googleKey) {
+      try {
+        await initGoogleMap(root, canvas);
+        return;
+      } catch (error) {
+        console.warn('Google Maps unavailable, falling back to OSM', error);
+        root.dataset.provider = 'osm';
+      }
+    }
+
+    initLeafletMap(root, canvas);
+  }
+
+  function watchStudioMap() {
+    const root = document.querySelector<MapHost>('[data-studio-map]');
+    if (!root) return;
+
+    const tryInit = () => {
+      void initStudioMap(root);
+    };
+    tryInit();
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) tryInit();
+      },
+      { threshold: 0.05 },
+    );
+    io.observe(root);
+
+    const contact = document.getElementById('contact');
+    if (contact) {
+      const mo = new MutationObserver(tryInit);
+      mo.observe(contact, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    window.addEventListener('resize', tryInit);
+    window.addEventListener('hashchange', tryInit);
+  }
+
+  watchStudioMap();
+</script>

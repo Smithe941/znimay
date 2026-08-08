@@ -5,6 +5,7 @@ import { defaultLang } from '../i18n/config';
 import { t } from '../i18n/ui';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { studioPlace } from '../data/contact';
 
 interface Props {
   /** @deprecated Language is chosen client-side; kept for title fallbacks */
@@ -75,13 +76,20 @@ const jsonLd = structuredData
       image: ogImageUrl,
       address: {
         '@type': 'PostalAddress',
-        addressLocality: 'Черкаси',
-        addressRegion: 'Черкаська область',
-        addressCountry: 'UA',
+        streetAddress: studioPlace.streetUk,
+        addressLocality: studioPlace.cityUk,
+        addressRegion: studioPlace.regionUk,
+        addressCountry: studioPlace.country,
       },
+      geo: {
+        '@type': 'GeoCoordinates',
+        latitude: studioPlace.lat,
+        longitude: studioPlace.lng,
+      },
+      hasMap: studioPlace.mapsUrl,
       areaServed: {
         '@type': 'City',
-        name: 'Черкаси',
+        name: studioPlace.cityUk,
       },
       sameAs: [
         'https://www.instagram.com/znimay_phstudio/',

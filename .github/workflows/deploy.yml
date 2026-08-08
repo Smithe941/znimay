@@ -67,6 +67,7 @@ jobs:
           CLOUDINARY_API_KEY: ${{ vars.CLOUDINARY_API_KEY || secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET: ${{ vars.CLOUDINARY_API_SECRET || secrets.CLOUDINARY_API_SECRET }}
           CLOUDINARY_BASE_FOLDER: ${{ vars.CLOUDINARY_BASE_FOLDER || 'znimay' }}
+          PUBLIC_GOOGLE_MAPS_API_KEY: ${{ vars.PUBLIC_GOOGLE_MAPS_API_KEY || secrets.PUBLIC_GOOGLE_MAPS_API_KEY }}
         run: |
           ${{ steps.detect-package-manager.outputs.runner }} astro build \
             --site "https://znimay.art" \

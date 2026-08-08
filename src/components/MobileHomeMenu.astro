@@ -57,6 +57,25 @@ const links = [
           </a>
         ))
       }
+      <button
+        type="button"
+        class="mobile-home-menu__link mobile-home-menu__link--tour"
+        data-tour-launch
+        aria-haspopup="dialog"
+        aria-controls="studio-tour-modal"
+      >
+        <span class="mobile-home-menu__tour-copy">
+          <span class="mobile-home-menu__tour-label">
+            <I18nText uk={uk.studio.tabTour} en={en.studio.tabTour} />
+          </span>
+          <span class="mobile-home-menu__tour-hint">
+            <I18nText uk={uk.studio.tabTourHint} en={en.studio.tabTourHint} />
+          </span>
+        </span>
+        <span class="mobile-home-menu__tour-orb" aria-hidden="true">
+          <span class="mobile-home-menu__tour-orb-core"></span>
+        </span>
+      </button>
     </nav>
 
     <div class="mobile-home-menu__social">

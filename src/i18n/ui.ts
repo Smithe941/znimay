@@ -6,7 +6,7 @@ const uk = {
     siteDescription:
       'Простора фотостудія в Черкасах. Фотосесії під ключ: сімейні, фешн, арт, бізнес. Зйомка відео будь-якого формату та супровід бізнесу.',
     keywords:
-      'фотостудія Черкаси, фотосесія Черкаси, сімейна фотосесія, фешн зйомка, арт фото, бізнес фото, відеозйомка Черкаси, оренда студії, ЗНІМАЙ',
+      'фотостудія Черкаси, фотосесія Черкаси, Надпільна, фотостудія Надпільна, сімейна фотосесія, фешн зйомка, арт фото, бізнес фото, відеозйомка Черкаси, оренда студії, ЗНІМАЙ',
     ogTitle: 'ЗНІМАЙ — простора фотостудія в Черкасах',
     locale: 'uk_UA',
   },
@@ -79,6 +79,9 @@ const uk = {
       'Напишіть, щоб обговорити фотосесію, відеозйомку чи оренду студії в Черкасах.',
     telegramLabel: 'Telegram',
     instagramLabel: 'Instagram',
+    addressLabel: 'Адреса',
+    openMap: 'Відкрити в Google Maps',
+    mapTitle: 'Студія на мапі',
   },
   portfolio: {
     back: 'Повернутися до студії',
@@ -111,7 +114,7 @@ const en: typeof uk = {
     siteDescription:
       'A spacious photo studio in Cherkasy. Turnkey photoshoots: family, fashion, art, business. Video of any format and business content support.',
     keywords:
-      'photo studio Cherkasy, photoshoot Cherkasy, family photoshoot, fashion shoot, art photography, business photography, video production Cherkasy, studio rental, ZNIMAY',
+      'photo studio Cherkasy, photoshoot Cherkasy, Nadpilna, photo studio Nadpilna, family photoshoot, fashion shoot, art photography, business photography, video production Cherkasy, studio rental, ZNIMAY',
     ogTitle: 'ZNIMAY — a spacious photo studio in Cherkasy',
     locale: 'en_US',
   },
@@ -182,6 +185,9 @@ const en: typeof uk = {
     subtitle: 'Write to discuss a photoshoot, video shoot, or studio rental in Cherkasy.',
     telegramLabel: 'Telegram',
     instagramLabel: 'Instagram',
+    addressLabel: 'Address',
+    openMap: 'Open in Google Maps',
+    mapTitle: 'Studio on the map',
   },
   portfolio: {
     back: 'Back to studio',

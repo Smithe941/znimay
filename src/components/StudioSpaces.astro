@@ -441,10 +441,10 @@ const advantages = uk.studio.advantages.map((text, index) => ({
         >
         </div>
         <figcaption
-          class="pointer-events-none absolute top-3 right-14 z-20 m-0 sm:top-4 sm:right-16"
+          class="pointer-events-none absolute top-4 left-1/2 z-20 m-0 w-[min(92%,24rem)] -translate-x-1/2 sm:top-5"
         >
           <p
-            class="text-right text-xs tracking-[0.14em] uppercase text-blush drop-shadow-[0_1px_8px_rgb(26_18_20_/_70%)] sm:text-sm"
+            class="mx-auto w-fit rounded-sm bg-ink/60 px-3 py-1.5 text-center text-sm font-medium tracking-[0.16em] uppercase text-blush shadow-[0_8px_28px_rgb(26_18_20_/_55%)] backdrop-blur-[6px] [text-shadow:0_1px_2px_rgb(0_0_0_/_85%),0_0_14px_rgb(26_18_20_/_80%)] sm:px-3.5 sm:py-2 sm:text-base"
             data-pano-name
           >
             <I18nText uk={startNode.name.uk} en={startNode.name.en} />
@@ -539,14 +539,16 @@ const advantages = uk.studio.advantages.map((text, index) => ({
 
   /* Custom control chrome: overlay navbar, no bottom bar */
   .studio-pano .psv-navbar.tour-psv-navbar {
+    display: block !important;
+    top: 0 !important;
+    right: 0 !important;
     bottom: 0 !important;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: none !important;
     background: transparent;
     pointer-events: none;
-    display: block;
   }
 
   .studio-pano .tour-psv-navbar .psv-button {
@@ -795,10 +797,35 @@ const advantages = uk.studio.advantages.map((text, index) => ({
     );
   }
 
-  .studio-pano .tour-psv-navbar [data-tour-ctrl='fullscreen'] {
+  .studio-pano .tour-fs {
+    pointer-events: auto;
     position: absolute;
-    top: 0.65rem;
-    right: 0.65rem;
+    top: auto;
+    left: auto;
+    right: 0.9rem;
+    bottom: 0.9rem;
+    z-index: 2;
+    margin: 0;
+    padding: 0;
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  @media (min-width: 640px) {
+    .studio-pano .tour-fs {
+      right: 1.15rem;
+      bottom: 1.15rem;
+      padding: 0;
+    }
+  }
+
+  .studio-pano .tour-fs .psv-button,
+  .studio-pano .tour-psv-navbar [data-tour-ctrl='fullscreen'] {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
     width: 48px;
     height: 48px;
     margin: 0;
@@ -813,6 +840,7 @@ const advantages = uk.studio.advantages.map((text, index) => ({
     justify-content: center;
   }
 
+  .studio-pano .tour-fs .psv-button svg,
   .studio-pano .tour-psv-navbar [data-tour-ctrl='fullscreen'] svg {
     width: 22px;
     height: 22px;
@@ -1075,6 +1103,7 @@ const advantages = uk.studio.advantages.map((text, index) => ({
   }
 
   tourOpenBtn?.addEventListener('click', () => openTourModal());
+  window.addEventListener('znimay:tour-open-request', () => openTourModal());
   tourCloseBtns.forEach((btn) => {
     btn.addEventListener('click', () => closeTourModal());
   });
@@ -1617,6 +1646,15 @@ const advantages = uk.studio.advantages.map((text, index) => ({
         const btn = byId.get(id);
         if (btn) dpad.appendChild(btn);
       }
+
+      let fsWrap = nav.querySelector<HTMLElement>('.tour-fs');
+      if (!fsWrap) {
+        fsWrap = document.createElement('div');
+        fsWrap.className = 'tour-fs';
+        nav.appendChild(fsWrap);
+      }
+      const fsBtn = byId.get('fullscreen');
+      if (fsBtn) fsWrap.appendChild(fsBtn);
     };
 
     layoutTourControls();
