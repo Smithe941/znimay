@@ -18,6 +18,10 @@ export function homePath() {
   return withBase('/');
 }
 
+export function tourPath() {
+  return withBase('/tour/');
+}
+
 export function teamMemberPath(slug: string) {
   return withBase(`/port/${slug}/`);
 }

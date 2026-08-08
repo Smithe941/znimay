@@ -5,7 +5,7 @@ import { withBase } from '../lib/paths';
 export const GET: APIRoute = ({ site }) => {
   const origin = site ?? new URL('https://znimay.art');
   const lastmod = new Date().toISOString().slice(0, 10);
-  const paths = ['/', ...team.map((member) => `/port/${member.slug}/`)];
+  const paths = ['/', '/tour/', ...team.map((member) => `/port/${member.slug}/`)];
 
   const urls = paths
     .map((path) => {

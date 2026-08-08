@@ -105,8 +105,8 @@ const advantages = uk.studio.advantages;
         <h2 class="chapter-title min-w-0">
           {uk.studio.title}
         </h2>
-        <button
-          type="button"
+        <a
+          href="#tour"
           class="studio-tour-cta cursor-pointer shrink-0 px-3.5 py-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:px-4 sm:py-2.5"
           data-tour-open
           aria-haspopup="dialog"
@@ -118,7 +118,7 @@ const advantages = uk.studio.advantages;
           <span class="mt-1 block text-[0.65rem] leading-none tracking-wide text-ink/70 normal-case">
             {uk.studio.tabTourHint}
           </span>
-        </button>
+        </a>
       </div>
 
       <p class="chapter-lede max-w-xl text-muted">
@@ -391,7 +391,7 @@ const advantages = uk.studio.advantages;
                   type="button"
                   role="tab"
                   id={`space-tab-${room.id}`}
-                  class="studio-tab-link cursor-pointer shrink-0 px-3 py-2 text-xs tracking-[0.16em] uppercase text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  class="studio-tab-link cursor-pointer shrink-0 px-3 py-2 text-xs tracking-[0.16em] uppercase text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                   aria-selected={index === 0 ? 'true' : 'false'}
                   aria-controls="studio-pano"
                   data-space-tab
@@ -463,10 +463,25 @@ const advantages = uk.studio.advantages;
           aria-pressed="false"
           aria-label={uk.studio.gyroOff}
         >
-          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-            <circle cx="12" cy="12" r="8.25" />
-            <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
-            <path stroke-linecap="round" d="M12 3.75V6.5M12 17.5v2.75M3.75 12H6.5M17.5 12h2.75" />
+          <svg class="size-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <defs>
+              <mask id="tour-gyro-orbit-mask">
+                <rect width="24" height="24" fill="white" />
+                <ellipse cx="12" cy="12" rx="4.35" ry="9.55" fill="none" stroke="black" stroke-width="3.5" />
+              </mask>
+            </defs>
+            <ellipse
+              cx="12"
+              cy="12"
+              rx="9.55"
+              ry="4.35"
+              stroke="currentColor"
+              stroke-width="1.55"
+              mask="url(#tour-gyro-orbit-mask)"
+            />
+            <ellipse cx="12" cy="12" rx="4.35" ry="9.55" stroke="currentColor" stroke-width="1.55" />
+            <path fill="currentColor" d="M14.55 3.4 16.85 6.45 13.4 5.55Z" />
+            <path fill="currentColor" d="M2.95 10.45 6.2 9.9 4.45 13.2Z" />
           </svg>
         </button>
       </figure>
@@ -569,6 +584,8 @@ const advantages = uk.studio.advantages;
   }
 
   .studio-tour-cta {
+    display: inline-block;
+    text-decoration: none;
     background: var(--color-blush);
     color: var(--color-ink);
   }
@@ -578,8 +595,18 @@ const advantages = uk.studio.advantages;
     background: var(--color-blush-soft);
   }
 
+  .studio-tab-link {
+    border-top: 2px solid transparent;
+    border-bottom: 2px solid transparent;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
+  }
+
   .studio-tab-link[data-active='true'] {
     color: var(--color-ink);
+    border-top-color: var(--color-blush);
+    border-bottom-color: var(--color-blush);
   }
 
   .locations-track {
@@ -1242,12 +1269,18 @@ const advantages = uk.studio.advantages;
     }
   }
 
-  const tourOpenBtn = root?.querySelector<HTMLButtonElement>('[data-tour-open]');
+  const tourOpenBtn = root?.querySelector<HTMLElement>('[data-tour-open]');
   const tourCloseBtns = tourModal
     ? Array.from(tourModal.querySelectorAll<HTMLElement>('[data-tour-close]'))
     : [];
   const swipeHint = tourModal?.querySelector<HTMLElement>('[data-tour-swipe-hint]');
   let swipeHintTimer = 0;
+  let tourHashPushed = false;
+  const TOUR_HASH = '#tour';
+
+  function isTourHash(hash = location.hash) {
+    return hash === TOUR_HASH;
+  }
 
   function showSwipeHint() {
     if (!swipeHint) return;
@@ -1255,17 +1288,22 @@ const advantages = uk.studio.advantages;
     swipeHint.classList.add('is-visible');
     swipeHintTimer = window.setTimeout(() => {
       swipeHint.classList.remove('is-visible');
-    }, 1000);
+    }, 2200);
   }
 
   function openTourModal() {
     if (!tourModal) return;
+    if (document.body.classList.contains('tour-open')) return;
     tourModal.hidden = false;
     tourModal.classList.remove('hidden');
     document.body.classList.add('tour-open');
     document.querySelector('header')?.setAttribute('aria-hidden', 'true');
     tourGyroStart?.();
     showSwipeHint();
+    if (!isTourHash()) {
+      tourHashPushed = true;
+      location.hash = TOUR_HASH;
+    }
     requestAnimationFrame(() => {
       window.dispatchEvent(new Event('resize'));
       window.dispatchEvent(new CustomEvent('znimay:tour-open'));
@@ -1273,8 +1311,9 @@ const advantages = uk.studio.advantages;
     });
   }
 
-  function closeTourModal() {
+  function closeTourModal({ fromHash = false } = {}) {
     if (!tourModal) return;
+    if (!document.body.classList.contains('tour-open')) return;
     window.clearTimeout(swipeHintTimer);
     swipeHint?.classList.remove('is-visible');
     tourModal.hidden = true;
@@ -1283,10 +1322,26 @@ const advantages = uk.studio.advantages;
     document.querySelector('header')?.removeAttribute('aria-hidden');
     tourGyroStop?.();
     tourOpenBtn?.focus();
+    if (!fromHash && isTourHash()) {
+      if (tourHashPushed) {
+        tourHashPushed = false;
+        history.back();
+      } else {
+        history.replaceState(null, '', '#studio');
+      }
+    }
   }
 
-  tourOpenBtn?.addEventListener('click', () => openTourModal());
+  function onTourHashChange() {
+    if (isTourHash()) openTourModal();
+    else if (document.body.classList.contains('tour-open')) {
+      tourHashPushed = false;
+      closeTourModal({ fromHash: true });
+    }
+  }
+
   window.addEventListener('znimay:tour-open-request', () => openTourModal());
+  window.addEventListener('hashchange', onTourHashChange);
   tourCloseBtns.forEach((btn) => {
     btn.addEventListener('click', () => closeTourModal());
   });
@@ -1295,6 +1350,7 @@ const advantages = uk.studio.advantages;
       closeTourModal();
     }
   });
+  if (isTourHash()) openTourModal();
 
   function wireTablist(
     tabs: HTMLButtonElement[],
@@ -1682,7 +1738,7 @@ const advantages = uk.studio.advantages;
     const startView = nodeById.get(config.startNodeId)?.view ?? { yaw: '0deg', pitch: '0deg' };
     const minFov = 30;
     const maxFov = 120;
-    const defaultFov = 80;
+    const defaultFov = 92;
     /** PSV zoom 0 = maxFov (out), 100 = minFov (in) */
     const fovToZoomLvl = (fov: number) =>
       Math.round(((maxFov - fov) / (maxFov - minFov)) * 100);

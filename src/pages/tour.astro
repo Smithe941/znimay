@@ -1,0 +1,42 @@
+---
+import { ui } from '../i18n/ui';
+import { homePath, tourPath } from '../lib/paths';
+
+const site = Astro.site ?? new URL('https://znimay.art');
+const dest = `${homePath()}#tour`;
+const pageUrl = new URL(tourPath(), site).href;
+const ogImage = new URL(`${import.meta.env.BASE_URL}og.jpg`.replace(/\/{2,}/g, '/'), site).href;
+const title = `${ui.studio.tabTour} · ${ui.meta.siteTitle}`;
+const description = ui.studio.tourPageDescription;
+---
+
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={pageUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ЗНІМАЙ" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content={ui.meta.locale} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta http-equiv="refresh" content={`0;url=${dest}`} />
+    <script is:inline define:vars={{ dest }}>
+      location.replace(dest);
+    </script>
+  </head>
+  <body>
+    <p>
+      <a href={dest}>{ui.studio.tabTour}</a>
+    </p>
+  </body>
+</html>

@@ -681,6 +681,7 @@
     letter-spacing: 0.03em;
     font-weight: 400;
     color: var(--color-blush);
+    text-decoration: none;
     transition: color 0.15s ease, opacity 0.15s ease;
   }
 

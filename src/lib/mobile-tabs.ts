@@ -9,6 +9,7 @@ const HASH_TO_TAB: Record<string, string> = {
   '#hero': 'home',
   '#team': 'portfolio',
   '#studio': 'studio',
+  '#tour': 'studio',
   '#services': 'offer',
   '#pricing': 'offer',
   '#contact': 'contact',
@@ -199,8 +200,11 @@ export function initMobileTabs() {
     const target = event.target;
     if (!(target instanceof Element)) return;
 
-    const tourLaunch = target.closest('[data-tour-launch]');
-    if (tourLaunch instanceof HTMLElement) {
+    const link = target.closest('a[href^="#"]');
+    if (!(link instanceof HTMLAnchorElement)) return;
+    const hash = link.getAttribute('href') || '';
+
+    if (hash === '#tour') {
       event.preventDefault();
       try {
         const orientation = window.DeviceOrientationEvent as typeof DeviceOrientationEvent & {
@@ -214,14 +218,12 @@ export function initMobileTabs() {
       }
       setActive('studio', { syncHash: true });
       window.setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('znimay:tour-open-request'));
+        if (location.hash !== '#tour') location.hash = '#tour';
+        else window.dispatchEvent(new CustomEvent('znimay:tour-open-request'));
       }, 60);
       return;
     }
 
-    const link = target.closest('a[href^="#"]');
-    if (!(link instanceof HTMLAnchorElement)) return;
-    const hash = link.getAttribute('href') || '';
     const tabId = HASH_TO_TAB[hash];
     if (!tabId) return;
     event.preventDefault();
