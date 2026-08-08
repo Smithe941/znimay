@@ -63,10 +63,10 @@ jobs:
 
       - name: Build with Astro
         env:
-          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
-          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
-          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
-          CLOUDINARY_BASE_FOLDER: znimay
+          CLOUDINARY_CLOUD_NAME: ${{ vars.CLOUDINARY_CLOUD_NAME || secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ vars.CLOUDINARY_API_KEY || secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ vars.CLOUDINARY_API_SECRET || secrets.CLOUDINARY_API_SECRET }}
+          CLOUDINARY_BASE_FOLDER: ${{ vars.CLOUDINARY_BASE_FOLDER || 'znimay' }}
         run: |
           ${{ steps.detect-package-manager.outputs.runner }} astro build \
             --site "${{ steps.pages.outputs.origin }}" \
