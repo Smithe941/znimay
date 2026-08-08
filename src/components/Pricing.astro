@@ -1,6 +1,6 @@
 ---
 import { t } from '../i18n/ui';
-import { packages, hourly, video, formatUah } from '../data/pricing';
+import { packages, hourly, videoOffers, formatUah } from '../data/pricing';
 import I18nText from './I18nText.astro';
 
 const uk = t('uk');
@@ -8,8 +8,8 @@ const en = t('en');
 
 const tabs = [
   { id: 'shoot', uk: uk.pricing.tabShoot, en: en.pricing.tabShoot },
-  { id: 'rent', uk: uk.pricing.tabRent, en: en.pricing.tabRent },
   { id: 'video', uk: uk.pricing.tabVideo, en: en.pricing.tabVideo },
+  { id: 'rent', uk: uk.pricing.tabRent, en: en.pricing.tabRent },
 ] as const;
 ---
 
@@ -19,11 +19,11 @@ const tabs = [
 >
   <div class="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col" data-pricing>
     <div class="shrink-0">
-      <div class="mb-4 max-w-xl sm:mb-5 md:mb-6">
-        <h2 class="hidden font-display text-[2.35rem] leading-none sm:text-4xl md:block md:text-5xl">
+      <div class="mb-4 hidden max-w-xl sm:mb-5 md:mb-6 md:block">
+        <h2 class="font-display text-[2.35rem] leading-none sm:text-4xl md:text-5xl">
           <I18nText uk={uk.pricing.title} en={en.pricing.title} />
         </h2>
-        <p class="mt-2 text-[0.95rem] leading-snug text-muted sm:text-base sm:leading-relaxed max-md:mt-0">
+        <p class="mt-2 text-[0.95rem] leading-snug text-muted sm:text-base sm:leading-relaxed">
           <I18nText uk={uk.pricing.subtitle} en={en.pricing.subtitle} />
         </p>
       </div>
@@ -57,7 +57,7 @@ const tabs = [
     </div>
 
     <div
-      class="min-h-0 pt-5 sm:pt-6 md:flex-1 md:overflow-y-auto md:overscroll-y-auto"
+      class="min-h-0 flex-1 overflow-y-auto overscroll-y-auto pt-3 sm:pt-4"
       data-pricing-scroll
     >
     <div
@@ -66,7 +66,7 @@ const tabs = [
       aria-labelledby="pricing-tab-shoot"
       data-pricing-panel="shoot"
     >
-      <p class="mb-5 text-[0.9rem] leading-snug text-muted sm:mb-6 sm:text-[0.95rem]">
+      <p class="mb-3 text-[0.9rem] leading-snug text-muted sm:mb-4 sm:text-[0.95rem]">
         <I18nText uk={uk.pricing.shootLead} en={en.pricing.shootLead} />
       </p>
 
@@ -75,7 +75,7 @@ const tabs = [
           packages.map((pkg) => (
             <li>
               <details class="pricing-pkg group">
-                <summary class="flex cursor-pointer list-none items-center gap-3 rounded-sm py-5 transition-colors hover:bg-ink/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:gap-4 sm:py-6 [&::-webkit-details-marker]:hidden">
+                <summary class="flex cursor-pointer list-none items-center gap-3 rounded-sm px-3 py-3.5 transition-colors hover:bg-ink/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:gap-4 sm:px-4 sm:py-4 [&::-webkit-details-marker]:hidden">
                   <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
                       <span class="font-display text-[1.65rem] leading-none tracking-wide sm:text-3xl">
@@ -85,7 +85,7 @@ const tabs = [
                         <I18nText uk={pkg.duration.uk} en={pkg.duration.en} />
                       </span>
                     </div>
-                    <p class="mt-2 text-[0.9rem] leading-snug text-muted sm:mt-2.5 sm:text-[0.95rem]">
+                    <p class="mt-1 text-[0.9rem] leading-snug text-muted sm:mt-1.5 sm:text-[0.95rem]">
                       <I18nText uk={pkg.summary.uk} en={pkg.summary.en} />
                     </p>
                   </div>
@@ -93,7 +93,7 @@ const tabs = [
                     <p class="text-[1.05rem] font-medium tabular-nums tracking-wide sm:text-xl">
                       <I18nText uk={formatUah(pkg.price, 'uk')} en={formatUah(pkg.price, 'en')} />
                     </p>
-                    <span class="mt-1.5 inline-flex items-center gap-1 text-[0.65rem] tracking-[0.14em] uppercase text-muted transition group-hover:text-ink group-open:text-ink">
+                    <span class="mt-1 inline-flex items-center gap-1 text-[0.65rem] tracking-[0.14em] uppercase text-muted transition group-hover:text-ink group-open:text-ink">
                       <I18nText uk={uk.pricing.details} en={en.pricing.details} />
                       <svg
                         class="h-3 w-3 transition-transform group-open:rotate-180"
@@ -112,7 +112,81 @@ const tabs = [
                     </span>
                   </div>
                 </summary>
-                <ul class="space-y-2 pb-5 pl-0 text-[0.95rem] leading-snug text-ink/80 sm:pb-6">
+                <ul class="space-y-1.5 px-3 pb-3.5 text-[0.95rem] leading-snug text-ink/80 sm:px-4 sm:pb-4">
+                  {pkg.features.map((feature) => (
+                    <li class="flex gap-2.5">
+                      <span class="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-blush" aria-hidden="true" />
+                      <span>
+                        <I18nText uk={feature.uk} en={feature.en} />
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div
+      id="pricing-panel-video"
+      role="tabpanel"
+      aria-labelledby="pricing-tab-video"
+      data-pricing-panel="video"
+      class="hidden"
+      hidden
+    >
+      <p class="mb-3 text-[0.9rem] leading-snug text-muted sm:mb-4 sm:text-[0.95rem]">
+        <I18nText uk={uk.pricing.videoLead} en={en.pricing.videoLead} />
+      </p>
+
+      <ul class="divide-y divide-ink/10 border-y border-ink/10">
+        {
+          videoOffers.map((pkg) => (
+            <li>
+              <details class="pricing-pkg group">
+                <summary class="flex cursor-pointer list-none items-center gap-3 rounded-sm px-3 py-3.5 transition-colors hover:bg-ink/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface sm:gap-4 sm:px-4 sm:py-4 [&::-webkit-details-marker]:hidden">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+                      <span class="font-display text-[1.65rem] leading-none tracking-wide sm:text-3xl">
+                        <I18nText uk={pkg.name.uk} en={pkg.name.en} />
+                      </span>
+                      <span class="text-sm text-muted">
+                        <I18nText uk={pkg.meta.uk} en={pkg.meta.en} />
+                      </span>
+                    </div>
+                    <p class="mt-1 text-[0.9rem] leading-snug text-muted sm:mt-1.5 sm:text-[0.95rem]">
+                      <I18nText uk={pkg.summary.uk} en={pkg.summary.en} />
+                    </p>
+                  </div>
+                  <div class="shrink-0 text-right">
+                    <p class="text-[1.05rem] font-medium tabular-nums tracking-wide sm:text-xl">
+                      <I18nText
+                        uk={formatUah(pkg.price, 'uk', { from: pkg.from, per: pkg.per })}
+                        en={formatUah(pkg.price, 'en', { from: pkg.from, per: pkg.per })}
+                      />
+                    </p>
+                    <span class="mt-1 inline-flex items-center gap-1 text-[0.65rem] tracking-[0.14em] uppercase text-muted transition group-hover:text-ink group-open:text-ink">
+                      <I18nText uk={uk.pricing.details} en={en.pricing.details} />
+                      <svg
+                        class="h-3 w-3 transition-transform group-open:rotate-180"
+                        viewBox="0 0 12 12"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M2.5 4.5 6 8l3.5-3.5"
+                          stroke="currentColor"
+                          stroke-width="1.4"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </div>
+                </summary>
+                <ul class="space-y-1.5 px-3 pb-3.5 text-[0.95rem] leading-snug text-ink/80 sm:px-4 sm:pb-4">
                   {pkg.features.map((feature) => (
                     <li class="flex gap-2.5">
                       <span class="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-blush" aria-hidden="true" />
@@ -141,7 +215,7 @@ const tabs = [
         <I18nText uk={hourly.lead.uk} en={hourly.lead.en} />
       </p>
 
-      <p class="mt-6 font-display text-[2.75rem] leading-none tracking-wide sm:mt-8 sm:text-6xl">
+      <p class="mt-4 font-display text-[2.75rem] leading-none tracking-wide sm:mt-5 sm:text-6xl">
         <span class="i18n-uk">{hourly.price.toLocaleString('uk-UA')}</span>
         <span class="i18n-en">{hourly.price.toLocaleString('en-US')}</span>
         <span class="ml-1 text-[1.1rem] tracking-normal text-muted sm:text-2xl">
@@ -149,7 +223,7 @@ const tabs = [
         </span>
       </p>
 
-      <ul class="mt-6 space-y-2.5 border-t border-ink/10 pt-6 text-[0.95rem] leading-snug text-ink/80 sm:mt-8 sm:pt-8">
+      <ul class="mt-4 space-y-2 border-t border-ink/10 pt-4 text-[0.95rem] leading-snug text-ink/80 sm:mt-5 sm:pt-5">
         {
           hourly.includes.map((item) => (
             <li class="flex gap-2.5">
@@ -163,36 +237,15 @@ const tabs = [
       </ul>
     </div>
 
-    <div
-      id="pricing-panel-video"
-      role="tabpanel"
-      aria-labelledby="pricing-tab-video"
-      data-pricing-panel="video"
-      class="hidden"
-      hidden
+    <p class="mt-5 text-[0.8rem] leading-snug text-muted sm:mt-6 sm:text-[0.85rem]">
+      <I18nText uk={uk.pricing.giftNote} en={en.pricing.giftNote} />
+    </p>
+    <a
+      href="#contact"
+      class="mt-3 inline-flex min-h-12 cursor-pointer items-center justify-center bg-ink px-6 py-3.5 text-center text-xs tracking-[0.16em] uppercase text-blush transition hover:bg-ink/90 hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:opacity-80 sm:mt-3.5 sm:min-h-0 sm:px-7 sm:py-3"
     >
-      <p class="text-[0.9rem] leading-snug text-muted sm:text-[0.95rem]">
-        <I18nText uk={video.lead.uk} en={video.lead.en} />
-      </p>
-
-      <p class="mt-6 font-display text-[2.75rem] leading-none tracking-wide sm:mt-8 sm:text-6xl">
-        <I18nText
-          uk={formatUah(video.fromPrice, 'uk', { from: true })}
-          en={formatUah(video.fromPrice, 'en', { from: true })}
-        />
-      </p>
-
-      <p class="mt-4 text-[0.95rem] leading-snug text-muted sm:mt-5">
-        <I18nText uk={video.note.uk} en={video.note.en} />
-      </p>
-
-      <a
-        href="#contact"
-        class="mt-8 inline-flex min-h-12 cursor-pointer items-center justify-center bg-ink px-6 py-3.5 text-center text-xs tracking-[0.16em] uppercase text-blush transition hover:bg-ink/90 hover:text-blush-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:opacity-80 sm:mt-10 sm:min-h-0 sm:px-7 sm:py-3"
-      >
-        <I18nText uk={uk.pricing.ctaDiscuss} en={en.pricing.ctaDiscuss} />
-      </a>
-    </div>
+      <I18nText uk={uk.pricing.ctaDiscuss} en={en.pricing.ctaDiscuss} />
+    </a>
     </div>
   </div>
 </section>

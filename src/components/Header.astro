@@ -40,20 +40,44 @@ const en = t('en');
       <BrandLogo lang="uk" size="nav" variant="bare" />
     </a>
 
-    <nav class="hidden items-center gap-8 text-sm tracking-wide text-blush-soft/90 md:flex" aria-label="Primary">
-      <a class="cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink" href={`${homePath()}#team`}>
+    <nav
+      class="desktop-nav hidden items-center gap-8 text-sm tracking-wide text-blush-soft/90 md:flex"
+      aria-label="Primary"
+      data-desktop-nav
+    >
+      <a
+        class="desktop-nav__link cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+        href={`${homePath()}#team`}
+        data-nav-section="team"
+      >
         <I18nText uk={uk.nav.team} en={en.nav.team} />
       </a>
-      <a class="cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink" href={`${homePath()}#studio`}>
+      <a
+        class="desktop-nav__link cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+        href={`${homePath()}#studio`}
+        data-nav-section="studio"
+      >
         <I18nText uk={uk.nav.studio} en={en.nav.studio} />
       </a>
-      <a class="cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink" href={`${homePath()}#services`}>
+      <a
+        class="desktop-nav__link cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+        href={`${homePath()}#services`}
+        data-nav-section="services"
+      >
         <I18nText uk={uk.nav.services} en={en.nav.services} />
       </a>
-      <a class="cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink" href={`${homePath()}#pricing`}>
+      <a
+        class="desktop-nav__link cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+        href={`${homePath()}#pricing`}
+        data-nav-section="pricing"
+      >
         <I18nText uk={uk.nav.pricing} en={en.nav.pricing} />
       </a>
-      <a class="cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink" href={`${homePath()}#contact`}>
+      <a
+        class="desktop-nav__link cursor-pointer transition-colors hover:text-blush focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blush/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+        href={`${homePath()}#contact`}
+        data-nav-section="contact"
+      >
         <I18nText uk={uk.nav.contact} en={en.nav.contact} />
       </a>
     </nav>
@@ -125,6 +149,21 @@ const en = t('en');
     </div>
   </div>
 </header>
+
+<style>
+  .desktop-nav__link {
+    padding-bottom: 0.2rem;
+    border-bottom: 2px solid transparent;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
+  }
+
+  .desktop-nav__link.is-active {
+    color: var(--color-blush);
+    border-bottom-color: var(--color-blush);
+  }
+</style>
 
 <div
   id="mobile-nav"
@@ -297,6 +336,71 @@ const en = t('en');
     );
 
     observer.observe(heroBrand);
+  }
+
+  const desktopNav = document.querySelector<HTMLElement>('[data-desktop-nav]');
+  const desktopLinks = desktopNav
+    ? [...desktopNav.querySelectorAll<HTMLAnchorElement>('[data-nav-section]')]
+    : [];
+  const desktopMq = window.matchMedia('(min-width: 768px)');
+
+  if (desktopNav && desktopLinks.length) {
+    const ratios = new Map<string, number>();
+    let observer: IntersectionObserver | null = null;
+
+    const setActive = (id: string) => {
+      desktopLinks.forEach((link) => {
+        const on = Boolean(id) && link.dataset.navSection === id;
+        link.classList.toggle('is-active', on);
+        if (on) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
+    };
+
+    const syncFromRatios = () => {
+      let best = '';
+      let bestRatio = 0.28;
+      for (const [id, ratio] of ratios) {
+        if (ratio > bestRatio) {
+          bestRatio = ratio;
+          best = id;
+        }
+      }
+      setActive(best);
+    };
+
+    const start = () => {
+      observer?.disconnect();
+      ratios.clear();
+      if (!desktopMq.matches) {
+        setActive('');
+        return;
+      }
+      const sections = desktopLinks
+        .map((link) => document.getElementById(link.dataset.navSection || ''))
+        .filter((el): el is HTMLElement => Boolean(el));
+      if (!sections.length) return;
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            ratios.set(entry.target.id, entry.isIntersecting ? entry.intersectionRatio : 0);
+          }
+          syncFromRatios();
+        },
+        { threshold: [0, 0.2, 0.35, 0.5, 0.65, 0.8, 1], rootMargin: '-12% 0px -35% 0px' },
+      );
+      sections.forEach((section) => observer?.observe(section));
+    };
+
+    desktopLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        const id = link.dataset.navSection;
+        if (id) setActive(id);
+      });
+    });
+
+    desktopMq.addEventListener('change', start);
+    start();
   }
 
   if (

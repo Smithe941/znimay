@@ -48,6 +48,13 @@ export const serviceBlocks: ServiceBlock[] = [
           en: 'A space with cyclorama, zones, dressing room, and lights — for your team or with our photographer.',
         },
       },
+      {
+        title: { uk: 'Безкоштовна оренда одягу', en: 'Free wardrobe rental' },
+        body: {
+          uk: 'Одяг, наявний у гримерці, можна взяти на зйомку без доплати.',
+          en: 'Clothing available in the dressing room can be used on the shoot at no extra cost.',
+        },
+      },
     ],
   },
   {

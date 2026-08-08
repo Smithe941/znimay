@@ -383,7 +383,29 @@
   }
 
   html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > .offer-stack > .offer-panel.is-offer-active[data-offer-panel='pricing'] {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     background: var(--color-surface);
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > .offer-stack > .offer-panel.is-offer-active[data-offer-panel='pricing'] .chapter {
+    display: flex !important;
+    flex: 1 1 auto;
+    flex-direction: column;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: hidden !important;
+    padding-bottom: 0.5rem !important;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > .offer-stack > .offer-panel.is-offer-active[data-offer-panel='pricing'] .chapter > div {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    flex-direction: column;
+    height: auto !important;
+    min-height: 0 !important;
   }
 
   html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > .offer-stack > .offer-panel.is-offer-active[data-offer-panel='services'] {
@@ -605,12 +627,21 @@
     color: color-mix(in srgb, var(--color-blush-soft) 50%, transparent);
   }
 
-  html[data-mobile-app='true'][data-mobile-app-active='true'] [data-services-scroll],
-  html[data-mobile-app='true'][data-mobile-app-active='true'] [data-pricing-scroll] {
+  html[data-mobile-app='true'][data-mobile-app-active='true'] [data-services-scroll] {
     overflow: visible !important;
     flex: none !important;
     min-height: 0 !important;
     height: auto !important;
+  }
+
+  html[data-mobile-app='true'][data-mobile-app-active='true'] [data-pricing-scroll] {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   html[data-mobile-app='true'][data-mobile-app-active='true'] .page-canvas[data-app-root] > [data-tab='studio'].is-tab-active {
@@ -671,9 +702,11 @@
     gap: 0.2rem;
     min-width: 0;
     padding: 0.35rem 0.15rem;
+    border-top: 2px solid transparent;
+    border-bottom: 2px solid transparent;
     color: color-mix(in srgb, var(--color-blush-soft) 55%, transparent);
     cursor: pointer;
-    transition: color 0.15s ease;
+    transition: color 0.15s ease, border-color 0.15s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -690,6 +723,8 @@
   .mobile-tabbar__tab.is-active,
   .mobile-tabbar__tab[aria-selected='true'] {
     color: var(--color-blush);
+    border-top-color: var(--color-blush);
+    border-bottom-color: var(--color-blush);
   }
 
   .mobile-tabbar__icon {
