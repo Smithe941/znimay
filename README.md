@@ -42,8 +42,8 @@ npm run dev
 
 ## Деплой (GitHub Pages)
 
-Сайт: `https://smithe941.github.io/holy_father_port/`  
-У збірці `PUBLIC_BASE_PATH=/holy_father_port/`, щоб CSS/JS не шукалися з кореня домену.
+Сайт: `https://smithe941.github.io/znimay/`  
+У збірці `PUBLIC_BASE_PATH=/znimay/`, щоб CSS/JS не шукалися з кореня домену.
 
 Workflow: `.github/workflows/deploy.yml`
 

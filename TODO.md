@@ -101,8 +101,8 @@ UA + EN, тон: продакшн-студія з власним простор�
 
 - [ ] GitHub Pages: Source → GitHub Actions
 - [ ] Додати secrets Cloudinary
-- [ ] Вирішити URL: project pages (`/holy_father_port`) чи окремий репо / кастомний домен `znimay.…`
-- [ ] Перейменувати репо під бренд, якщо треба
+- [x] Вирішити URL: project pages (`/znimay`) чи окремий репо / кастомний домен `znimay.…`
+- [x] Перейменувати репо під бренд, якщо треба
 
 ## 10. Секція «Послуги»
 
