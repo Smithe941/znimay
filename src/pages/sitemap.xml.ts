@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { team } from '../data/team';
+import { withBase } from '../lib/paths';
 
 export const GET: APIRoute = ({ site }) => {
   const origin = site ?? new URL('https://smithe941.github.io');
@@ -7,7 +8,7 @@ export const GET: APIRoute = ({ site }) => {
 
   const urls = paths
     .map((path) => {
-      const loc = new URL(path, origin).href;
+      const loc = new URL(withBase(path), origin).href;
       return `  <url>\n    <loc>${loc}</loc>\n  </url>`;
     })
     .join('\n');

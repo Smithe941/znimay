@@ -36,7 +36,7 @@ jobs:
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
           CLOUDINARY_BASE_FOLDER: znimay
-          PUBLIC_BASE_PATH: /
+          PUBLIC_BASE_PATH: /holy_father_port/
         run: npm run build
 
       - name: Upload Pages artifact
